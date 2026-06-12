@@ -7,8 +7,8 @@
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
-      <link rel="stylesheet" href="styles.css">
-  
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="script.mjs"></script>
   </head>
   <body>
     <div class="app">
@@ -25,7 +25,7 @@
               placeholder="New class name…"
               maxlength="30" />
             <button onclick="createClass()" title="Add class">
-              <i class="ti ti-plus" aria-hidden="true"></i>
+              <i class="ti ti-plus"></i>
             </button>
           </div>
         </div>
@@ -34,7 +34,6 @@
           <div class="empty-state" id="emptyState">
             <i
               class="ti ti-school"
-              aria-hidden="true"
               style="
                 font-size: 32px;
                 display: block;
@@ -48,10 +47,10 @@
             <div class="panel-header">
               <span id="classTitle" class="panel-title"></span>
               <button class="btn" onclick="startRename()" title="Rename class">
-                <i class="ti ti-edit" aria-hidden="true"></i>
+                <i class="ti ti-edit"></i>
               </button>
               <button class="btn btn-accent" onclick="openBulk()">
-                <i class="ti ti-list" aria-hidden="true"></i> Add multiple
+                <i class="ti ti-list"></i> Add multiple
               </button>
             </div>
 
@@ -62,13 +61,14 @@
                 placeholder="Add one student…"
                 maxlength="30" />
               <button class="btn" onclick="addName()">
-                <i class="ti ti-plus" aria-hidden="true"></i> Add
+                <i class="ti ti-plus"></i> Add
               </button>
               <button class="btn" onclick="loadDemo()">
-                <i class="ti ti-users" aria-hidden="true"></i> Demo names
+                <i class="ti ti-users"></i> Demo names
               </button>
             </div>
 
+            <p class="name-list-label" id="nameListLabel"></p>
             <div class="name-list" id="nameList"></div>
 
             <div class="wheel-area">
@@ -86,7 +86,7 @@
                   Spin!
                 </button>
                 <button class="btn" onclick="resetWheel()">
-                  <i class="ti ti-refresh" aria-hidden="true"></i> Reset
+                  <i class="ti ti-refresh"></i> Reset
                 </button>
               </div>
             </div>
@@ -99,7 +99,8 @@
       <div class="modal">
         <h3>Add multiple students</h3>
         <p>
-          One name per line, or separate with commas. Duplicates are skipped.
+          Paste or type names — one per line or comma-separated. Duplicates are
+          skipped.
         </p>
         <textarea
           id="bulkText"
@@ -107,455 +108,11 @@
         <div class="modal-btns">
           <button class="btn" onclick="closeBulk()">Cancel</button>
           <button class="btn btn-spin" onclick="confirmBulk()">
-            <i class="ti ti-check" aria-hidden="true"></i> Add all
+            <i class="ti ti-check"></i> Add all
           </button>
         </div>
       </div>
     </div>
-
-    <script>
-      const COLORS = [
-        ["#EEEDFE", "#534AB7"],
-        ["#E1F5EE", "#0F6E56"],
-        ["#FAECE7", "#993C1D"],
-        ["#FBEAF0", "#993556"],
-        ["#E6F1FB", "#185FA5"],
-        ["#EAF3DE", "#3B6D11"],
-        ["#FAEEDA", "#854F0B"],
-        ["#FCEBEB", "#A32D2D"],
-        ["#E1F5EE", "#085041"],
-        ["#EEEDFE", "#3C3489"],
-        ["#FAECE7", "#712B13"],
-        ["#E6F1FB", "#0C447C"],
-      ];
-
-      const DEMO = [
-        "Alice",
-        "Bob",
-        "Carlos",
-        "Diana",
-        "Ethan",
-        "Fatima",
-        "George",
-        "Hannah",
-        "Ivan",
-        "Jasmine",
-      ];
-      const PREBUILT = [
-        {
-          name: "Math 101",
-          students: [
-            "Alice",
-            "Bob",
-            "Carlos",
-            "Diana",
-            "Ethan",
-            "Fatima",
-            "George",
-            "Hannah",
-          ],
-        },
-        {
-          name: "Science 5A",
-          students: [
-            "Ivan",
-            "Jasmine",
-            "Kevin",
-            "Laura",
-            "Mike",
-            "Nina",
-            "Oscar",
-            "Priya",
-          ],
-        },
-        {
-          name: "English B",
-          students: [
-            "Quinn",
-            "Rosa",
-            "Sam",
-            "Tina",
-            "Uma",
-            "Victor",
-            "Wendy",
-            "Xander",
-            "Yara",
-            "Zoe",
-          ],
-        },
-      ];
-
-      let classes = {};
-      let activeId = null;
-      let remaining = [];
-      let spinning = false;
-      let angle = 0;
-      let animId = null;
-
-      const canvas = document.getElementById("wheelCanvas");
-      const ctx = canvas.getContext("2d");
-
-      function save() {
-        try {
-          localStorage.setItem("wheelClasses", JSON.stringify(classes));
-          localStorage.setItem("wheelActive", activeId || "");
-        } catch (e) {}
-      }
-      function loadStorage() {
-        try {
-          const d = localStorage.getItem("wheelClasses");
-          if (d) classes = JSON.parse(d);
-          const a = localStorage.getItem("wheelActive");
-          if (a && classes[a]) activeId = a;
-        } catch (e) {}
-      }
-
-      loadStorage();
-      if (Object.keys(classes).length === 0) {
-        PREBUILT.forEach((p) => {
-          const id = uid();
-          classes[id] = { name: p.name, students: [...p.students] };
-        });
-        save();
-      }
-
-      function uid() {
-        return "c" + Date.now() + Math.random().toString(36).slice(2, 6);
-      }
-      function esc(s) {
-        return s
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-
-      function renderSidebar() {
-        const el = document.getElementById("classList");
-        const ids = Object.keys(classes);
-        if (!ids.length) {
-          el.innerHTML =
-            '<p style="font-size:12px;color:#888;padding:4px 0;">No classes yet</p>';
-          return;
-        }
-        el.innerHTML = ids
-          .map((id) => {
-            const c = classes[id];
-            return `<div class="class-item${id === activeId ? " active" : ""}" onclick="selectClass('${id}')">
-        <span class="ci-name">${esc(c.name)}</span>
-        <span class="ci-count">${c.students.length}</span>
-        <button class="ci-del" onclick="deleteClass(event,'${id}')" title="Delete class"><i class="ti ti-trash" style="font-size:13px;" aria-hidden="true"></i></button>
-      </div>`;
-          })
-          .join("");
-      }
-
-      function createClass() {
-        const inp = document.getElementById("newClassName");
-        const name = inp.value.trim();
-        if (!name) return;
-        const id = uid();
-        classes[id] = { name, students: [] };
-        inp.value = "";
-        save();
-        selectClass(id);
-      }
-
-      function deleteClass(e, id) {
-        e.stopPropagation();
-        if (!confirm('Delete "' + classes[id].name + '"?')) return;
-        delete classes[id];
-        if (activeId === id) {
-          activeId = null;
-          showEmpty();
-        }
-        save();
-        renderSidebar();
-      }
-
-      function selectClass(id) {
-        activeId = id;
-        remaining = [...classes[id].students];
-        angle = 0;
-        spinning = false;
-        if (animId) cancelAnimationFrame(animId);
-        save();
-        renderSidebar();
-        showEditor();
-      }
-
-      function showEmpty() {
-        document.getElementById("emptyState").style.display = "";
-        document.getElementById("classEditor").style.display = "none";
-      }
-
-      function showEditor() {
-        const c = classes[activeId];
-        document.getElementById("emptyState").style.display = "none";
-        document.getElementById("classEditor").style.display = "";
-        document.getElementById("classTitle").textContent = c.name;
-        document.getElementById("resultBox").textContent = c.students.length
-          ? "Ready to spin!"
-          : "Add students to spin!";
-        renderNameList();
-        drawWheel();
-        updateUI();
-      }
-
-      function startRename() {
-        const c = classes[activeId];
-        const titleEl = document.getElementById("classTitle");
-        titleEl.outerHTML = `<input class="edit-name-input" id="classTitle" value="${esc(c.name)}" onblur="finishRename()" onkeydown="if(event.key==='Enter')this.blur()" />`;
-        document.getElementById("classTitle").focus();
-      }
-
-      function finishRename() {
-        const inp = document.getElementById("classTitle");
-        const val = inp.value.trim() || classes[activeId].name;
-        classes[activeId].name = val;
-        save();
-        renderSidebar();
-        inp.outerHTML = `<span class="panel-title" id="classTitle">${esc(val)}</span>`;
-      }
-
-      function addName() {
-        const inp = document.getElementById("nameInput");
-        const val = inp.value.trim();
-        if (!val || !activeId) return;
-        if (!classes[activeId].students.includes(val)) {
-          classes[activeId].students.push(val);
-          if (!remaining.includes(val)) remaining.push(val);
-          save();
-        }
-        inp.value = "";
-        renderNameList();
-        drawWheel();
-        updateUI();
-        renderSidebar();
-      }
-
-      function removeName(name) {
-        if (!activeId) return;
-        classes[activeId].students = classes[activeId].students.filter(
-          (n) => n !== name,
-        );
-        remaining = remaining.filter((n) => n !== name);
-        save();
-        renderNameList();
-        drawWheel();
-        updateUI();
-        renderSidebar();
-      }
-
-      function loadDemo() {
-        if (!activeId) return;
-        DEMO.forEach((n) => {
-          if (!classes[activeId].students.includes(n)) {
-            classes[activeId].students.push(n);
-            remaining.push(n);
-          }
-        });
-        save();
-        renderNameList();
-        drawWheel();
-        updateUI();
-        renderSidebar();
-      }
-
-      function openBulk() {
-        document.getElementById("bulkText").value = "";
-        document.getElementById("bulkModal").classList.add("open");
-        document.getElementById("bulkText").focus();
-      }
-
-      function closeBulk() {
-        document.getElementById("bulkModal").classList.remove("open");
-      }
-
-      function confirmBulk() {
-        const raw = document.getElementById("bulkText").value;
-        const names = raw
-          .split(/[\n,]/)
-          .map((s) => s.trim())
-          .filter((s) => s.length > 0 && s.length <= 30);
-        let added = 0;
-        names.forEach((n) => {
-          if (!classes[activeId].students.includes(n)) {
-            classes[activeId].students.push(n);
-            remaining.push(n);
-            added++;
-          }
-        });
-        save();
-        renderNameList();
-        drawWheel();
-        updateUI();
-        renderSidebar();
-        closeBulk();
-        if (added > 0)
-          document.getElementById("resultBox").textContent =
-            `Added ${added} student${added > 1 ? "s" : ""}!`;
-      }
-
-      document
-        .getElementById("bulkModal")
-        .addEventListener("click", function (e) {
-          if (e.target === this) closeBulk();
-        });
-
-      document.getElementById("nameInput").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") addName();
-      });
-      document
-        .getElementById("newClassName")
-        .addEventListener("keydown", (e) => {
-          if (e.key === "Enter") createClass();
-        });
-
-      function renderNameList() {
-        const el = document.getElementById("nameList");
-        if (!activeId || !classes[activeId].students.length) {
-          el.innerHTML =
-            '<p class="hint">No students yet — add names above</p>';
-          return;
-        }
-        el.innerHTML = classes[activeId].students
-          .map((n) => {
-            const picked = !remaining.includes(n);
-            return `<div class="name-tag${picked ? " picked" : ""}">
-        <span>${esc(n)}</span>
-        <button onclick="removeName('${n.replace(/'/g, "\\'")}') " title="Remove ${esc(n)}"><i class="ti ti-x" aria-hidden="true"></i></button>
-      </div>`;
-          })
-          .join("");
-      }
-
-      function updateUI() {
-        const btn = document.getElementById("spinBtn");
-        btn.disabled = remaining.length < 1 || spinning;
-        if (
-          remaining.length === 0 &&
-          activeId &&
-          classes[activeId].students.length > 0
-        ) {
-          document.getElementById("resultBox").textContent =
-            "Everyone picked! Hit reset.";
-        }
-      }
-
-      function drawWheel() {
-        const n = remaining.length;
-        ctx.clearRect(0, 0, 300, 300);
-        if (n === 0) {
-          ctx.beginPath();
-          ctx.arc(150, 150, 145, 0, Math.PI * 2);
-          ctx.fillStyle = "#E1F5EE";
-          ctx.fill();
-          ctx.strokeStyle = "#9FE1CB";
-          ctx.lineWidth = 3;
-          ctx.stroke();
-          ctx.fillStyle = "#0F6E56";
-          ctx.font = "500 14px system-ui,sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("All done!", 150, 158);
-          return;
-        }
-        const slice = (Math.PI * 2) / n;
-        remaining.forEach((name, i) => {
-          const [bg, fg] = COLORS[i % COLORS.length];
-          const start = angle + i * slice,
-            end = start + slice;
-          ctx.beginPath();
-          ctx.moveTo(150, 150);
-          ctx.arc(150, 150, 145, start, end);
-          ctx.closePath();
-          ctx.fillStyle = bg;
-          ctx.fill();
-          ctx.strokeStyle = fg;
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          ctx.save();
-          ctx.translate(150, 150);
-          ctx.rotate(start + slice / 2);
-          ctx.textAlign = "right";
-          const fs = n > 8 ? 11 : n > 5 ? 13 : 14;
-          ctx.font = `500 ${fs}px system-ui,sans-serif`;
-          ctx.fillStyle = fg;
-          ctx.fillText(
-            name.length > 14 ? name.slice(0, 13) + "…" : name,
-            138,
-            5,
-          );
-          ctx.restore();
-        });
-        ctx.beginPath();
-        ctx.arc(150, 150, 18, 0, Math.PI * 2);
-        ctx.fillStyle = "#fff";
-        ctx.fill();
-        ctx.strokeStyle = "#ccc";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-
-      function spin() {
-        if (spinning || remaining.length === 0) return;
-        spinning = true;
-        document.getElementById("spinBtn").disabled = true;
-        document.getElementById("resultBox").textContent = "🎲 Spinning…";
-        const n = remaining.length,
-          sliceAngle = (Math.PI * 2) / n;
-        const winnerIdx = Math.floor(Math.random() * n);
-        const extraSpins = Math.PI * 2 * (5 + Math.floor(Math.random() * 3));
-        const targetOffset =
-          Math.PI * 1.5 - (winnerIdx * sliceAngle + sliceAngle / 2);
-        const targetAngle = extraSpins + targetOffset - (angle % (Math.PI * 2));
-        let start = null;
-        const duration = 3500 + Math.random() * 1000;
-        function ease(t) {
-          return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-        }
-        function frame(ts) {
-          if (!start) start = ts;
-          const progress = Math.min((ts - start) / duration, 1);
-          angle = (angle % (Math.PI * 2)) + ease(progress) * targetAngle;
-          drawWheel();
-          if (progress < 1) {
-            animId = requestAnimationFrame(frame);
-          } else {
-            spinning = false;
-            const picked = remaining[winnerIdx];
-            document.getElementById("resultBox").textContent =
-              "🎉 " + picked + "!";
-            remaining.splice(winnerIdx, 1);
-            renderNameList();
-            setTimeout(() => {
-              drawWheel();
-              updateUI();
-            }, 800);
-          }
-        }
-        animId = requestAnimationFrame(frame);
-      }
-
-      function resetWheel() {
-        if (animId) cancelAnimationFrame(animId);
-        spinning = false;
-        angle = 0;
-        if (activeId) remaining = [...classes[activeId].students];
-        document.getElementById("resultBox").textContent = remaining.length
-          ? "Ready to spin!"
-          : "Add students to spin!";
-        renderNameList();
-        drawWheel();
-        updateUI();
-      }
-
-      renderSidebar();
-      if (activeId && classes[activeId]) selectClass(activeId);
-      else {
-        const ids = Object.keys(classes);
-        if (ids.length) selectClass(ids[0]);
-      }
-    </script>
+    
   </body>
 </html>
