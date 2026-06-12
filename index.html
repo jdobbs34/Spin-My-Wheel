@@ -15,7 +15,6 @@
         margin: 0;
         padding: 0;
       }
-
       body {
         font-family:
           system-ui,
@@ -24,76 +23,201 @@
         background: #f5f5f2;
         color: #1a1a18;
         min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        padding: 2rem 1rem;
+        padding: 1.5rem 1rem;
       }
-
-      .container {
-        width: 100%;
-        max-width: 680px;
+      .app {
+        max-width: 820px;
+        margin: 0 auto;
       }
-
       h1 {
         font-size: 22px;
         font-weight: 500;
         margin-bottom: 1.25rem;
+      }
+      .two-col {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 1rem;
+        align-items: start;
+      }
+      .sidebar {
+        background: #fff;
+        border: 0.5px solid #ddd;
+        border-radius: 12px;
+        padding: 12px;
+      }
+      .sidebar-title {
+        font-size: 12px;
+        font-weight: 500;
+        color: #888;
+        margin-bottom: 8px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .class-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 10px;
+      }
+      .class-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 0.5px solid transparent;
+        font-size: 13px;
+        color: #1a1a18;
+        background: transparent;
+        transition: background 0.1s;
+      }
+      .class-item:hover {
+        background: #f0efea;
+      }
+      .class-item.active {
+        background: #ebebeb;
+        border-color: #ccc;
+      }
+      .ci-name {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .ci-count {
+        font-size: 11px;
+        color: #888;
+        white-space: nowrap;
+      }
+      .ci-del {
+        background: none;
+        border: none;
+        padding: 2px;
+        cursor: pointer;
+        color: #aaa;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        opacity: 0;
+      }
+      .class-item:hover .ci-del {
+        opacity: 1;
+      }
+      .ci-del:hover {
+        color: #c0392b;
+      }
+      .new-class-row {
+        display: flex;
+        gap: 6px;
+      }
+      .new-class-row input {
+        flex: 1;
+        min-width: 0;
+        padding: 6px 8px;
+        border: 0.5px solid #ccc;
+        border-radius: 8px;
+        font-size: 13px;
+        background: #fff;
         color: #1a1a18;
       }
-
+      .new-class-row input:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #ddd;
+      }
+      .new-class-row button {
+        padding: 6px 10px;
+        border: 0.5px solid #ccc;
+        border-radius: 8px;
+        background: #fff;
+        color: #1a1a18;
+        font-size: 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+      }
+      .new-class-row button:hover {
+        background: #f0efea;
+      }
+      .main-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .panel-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .panel-title {
+        font-size: 18px;
+        font-weight: 500;
+        flex: 1;
+      }
+      .edit-name-input {
+        font-size: 18px;
+        font-weight: 500;
+        border: none;
+        border-bottom: 1.5px solid #ccc;
+        background: transparent;
+        color: #1a1a18;
+        outline: none;
+        flex: 1;
+        padding: 2px 4px;
+      }
       .top-bar {
         display: flex;
         gap: 8px;
-        margin-bottom: 1rem;
         flex-wrap: wrap;
+        margin-bottom: 10px;
       }
-
       .top-bar input {
         flex: 1;
-        min-width: 160px;
-        padding: 8px 12px;
-        border: 0.5px solid #aaa;
+        min-width: 140px;
+        padding: 7px 10px;
+        border: 0.5px solid #ccc;
         border-radius: 8px;
-        font-size: 14px;
+        font-size: 13px;
         background: #fff;
         color: #1a1a18;
       }
-
       .top-bar input:focus {
         outline: none;
-        box-shadow: 0 0 0 2px #ccc;
+        box-shadow: 0 0 0 2px #ddd;
       }
-
-      button {
-        padding: 8px 16px;
-        border: 0.5px solid #aaa;
+      .btn {
+        padding: 7px 14px;
+        border: 0.5px solid #ccc;
         border-radius: 8px;
         background: #fff;
         color: #1a1a18;
-        font-size: 14px;
+        font-size: 13px;
         cursor: pointer;
-        transition: background 0.15s;
         display: inline-flex;
         align-items: center;
         gap: 5px;
+        transition: background 0.1s;
+        font-family: inherit;
       }
-
-      button:hover {
-        background: #ebebeb;
+      .btn:hover {
+        background: #f0efea;
       }
-      button:active {
+      .btn:active {
         transform: scale(0.98);
       }
-
       .btn-spin {
         background: #534ab7;
         color: #fff;
         border-color: #534ab7;
         font-weight: 500;
-        padding: 10px 28px;
-        font-size: 15px;
+        padding: 9px 24px;
+        font-size: 14px;
       }
-
       .btn-spin:hover {
         background: #3c3489;
         border-color: #3c3489;
@@ -105,133 +229,223 @@
         cursor: not-allowed;
         transform: none;
       }
-
+      .btn-accent {
+        background: #185fa5;
+        color: #fff;
+        border-color: #185fa5;
+      }
+      .btn-accent:hover {
+        background: #0c447c;
+        border-color: #0c447c;
+      }
       .wheel-area {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1rem;
+        gap: 12px;
       }
-
       .wheel-wrap {
         position: relative;
-        width: 320px;
-        height: 320px;
+        width: 300px;
+        height: 300px;
       }
-
       canvas {
         border-radius: 50%;
         display: block;
       }
-
       .pointer {
         position: absolute;
-        top: -18px;
+        top: -16px;
         left: 50%;
         transform: translateX(-50%);
         width: 0;
         height: 0;
-        border-left: 14px solid transparent;
-        border-right: 14px solid transparent;
-        border-top: 28px solid #d85a30;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+        border-left: 12px solid transparent;
+        border-right: 12px solid transparent;
+        border-top: 24px solid #d85a30;
         z-index: 10;
       }
-
       .result-box {
-        min-height: 48px;
+        min-height: 44px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 500;
         color: #1a1a18;
         background: #ebebeb;
         border-radius: 12px;
-        padding: 10px 24px;
+        padding: 8px 20px;
         border: 0.5px solid #ddd;
         width: 100%;
-        max-width: 320px;
+        max-width: 300px;
         text-align: center;
       }
-
       .controls {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
         justify-content: center;
       }
-
       .name-list {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
-        justify-content: center;
-        max-width: 360px;
-        margin-top: 0.5rem;
+        gap: 5px;
+        margin-bottom: 1rem;
+        min-height: 28px;
       }
-
       .name-tag {
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
         background: #ebebeb;
         border: 0.5px solid #ddd;
         border-radius: 20px;
-        padding: 4px 10px 4px 12px;
-        font-size: 13px;
+        padding: 3px 8px 3px 10px;
+        font-size: 12px;
         color: #1a1a18;
       }
-
+      .name-tag.picked {
+        opacity: 0.4;
+        text-decoration: line-through;
+      }
       .name-tag button {
         border: none;
         background: none;
         padding: 0;
-        width: 18px;
-        height: 18px;
-        font-size: 14px;
-        color: #666;
+        width: 16px;
+        height: 16px;
+        font-size: 13px;
+        color: #888;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 50%;
       }
-
       .name-tag button:hover {
         background: #ddd;
         color: #1a1a18;
       }
-
-      .empty-hint {
+      .hint {
         font-size: 13px;
         color: #888;
-        text-align: center;
-        padding: 0.5rem;
+        padding: 0.5rem 0;
       }
-
+      .empty-state {
+        padding: 2rem 1rem;
+        text-align: center;
+        color: #888;
+        font-size: 14px;
+      }
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal {
+        background: #fff;
+        border: 0.5px solid #ddd;
+        border-radius: 12px;
+        padding: 1.5rem;
+        width: 100%;
+        max-width: 380px;
+        margin: 1rem;
+      }
+      .modal h3 {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .modal p {
+        font-size: 13px;
+        color: #888;
+        margin-bottom: 12px;
+      }
+      .modal textarea {
+        width: 100%;
+        min-height: 140px;
+        padding: 10px;
+        border: 0.5px solid #ccc;
+        border-radius: 8px;
+        font-size: 13px;
+        background: #fff;
+        color: #1a1a18;
+        resize: vertical;
+        font-family: inherit;
+        line-height: 1.6;
+      }
+      .modal textarea:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #ddd;
+      }
+      .modal-btns {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 12px;
+      }
+      @media (max-width: 560px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          order: 2;
+        }
+        .main-panel {
+          order: 1;
+        }
+      }
       @media (prefers-color-scheme: dark) {
         body {
           background: #1a1a18;
           color: #f0efe8;
         }
-        h1 {
+        .sidebar {
+          background: #2c2c2a;
+          border-color: #444;
+        }
+        .class-item {
           color: #f0efe8;
+        }
+        .class-item:hover {
+          background: #3a3a38;
+        }
+        .class-item.active {
+          background: #3a3a38;
+          border-color: #555;
+        }
+        .new-class-row input {
+          background: #2c2c2a;
+          border-color: #444;
+          color: #f0efe8;
+        }
+        .new-class-row button {
+          background: #2c2c2a;
+          border-color: #444;
+          color: #f0efe8;
+        }
+        .new-class-row button:hover {
+          background: #3a3a38;
         }
         .top-bar input {
           background: #2c2c2a;
           border-color: #444;
           color: #f0efe8;
         }
-        .top-bar input:focus {
-          box-shadow: 0 0 0 2px #555;
-        }
-        button {
+        .btn {
           background: #2c2c2a;
           border-color: #444;
           color: #f0efe8;
         }
-        button:hover {
+        .btn:hover {
           background: #3a3a38;
         }
         .result-box {
@@ -251,44 +465,123 @@
           background: #3a3a38;
           color: #f0efe8;
         }
-        .empty-hint {
-          color: #888;
+        .modal {
+          background: #2c2c2a;
+          border-color: #444;
+        }
+        .modal h3 {
+          color: #f0efe8;
+        }
+        .modal textarea {
+          background: #1a1a18;
+          border-color: #444;
+          color: #f0efe8;
+        }
+        .edit-name-input {
+          color: #f0efe8;
+          border-color: #555;
         }
       }
     </style>
   </head>
   <body>
-    <div class="container">
+    <div class="app">
       <h1>Spin the Wheel — Student Picker</h1>
 
-      <div class="top-bar">
-        <input
-          type="text"
-          id="nameInput"
-          placeholder="Add student name..."
-          maxlength="30" />
-        <button onclick="addName()">
-          <i class="ti ti-plus" aria-hidden="true"></i> Add
-        </button>
-        <button onclick="loadDemo()">
-          <i class="ti ti-users" aria-hidden="true"></i> Load demo class
-        </button>
-      </div>
-
-      <div class="name-list" id="nameList"></div>
-
-      <div class="wheel-area" style="margin-top: 1.25rem">
-        <div class="wheel-wrap">
-          <div class="pointer"></div>
-          <canvas id="wheelCanvas" width="320" height="320"></canvas>
+      <div class="two-col">
+        <div class="sidebar">
+          <div class="sidebar-title">My classes</div>
+          <div class="class-list" id="classList"></div>
+          <div class="new-class-row">
+            <input
+              type="text"
+              id="newClassName"
+              placeholder="New class name…"
+              maxlength="30" />
+            <button onclick="createClass()" title="Add class">
+              <i class="ti ti-plus" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
-        <div class="result-box" id="resultBox">Add names to spin!</div>
-        <div class="controls">
-          <button class="btn-spin" id="spinBtn" onclick="spin()" disabled>
-            Spin!
-          </button>
-          <button onclick="resetWheel()">
-            <i class="ti ti-refresh" aria-hidden="true"></i> Reset
+
+        <div class="main-panel">
+          <div class="empty-state" id="emptyState">
+            <i
+              class="ti ti-school"
+              aria-hidden="true"
+              style="
+                font-size: 32px;
+                display: block;
+                margin-bottom: 8px;
+                opacity: 0.4;
+              "></i>
+            Create or select a class to get started
+          </div>
+
+          <div id="classEditor" style="display: none">
+            <div class="panel-header">
+              <span id="classTitle" class="panel-title"></span>
+              <button class="btn" onclick="startRename()" title="Rename class">
+                <i class="ti ti-edit" aria-hidden="true"></i>
+              </button>
+              <button class="btn btn-accent" onclick="openBulk()">
+                <i class="ti ti-list" aria-hidden="true"></i> Add multiple
+              </button>
+            </div>
+
+            <div class="top-bar">
+              <input
+                type="text"
+                id="nameInput"
+                placeholder="Add one student…"
+                maxlength="30" />
+              <button class="btn" onclick="addName()">
+                <i class="ti ti-plus" aria-hidden="true"></i> Add
+              </button>
+              <button class="btn" onclick="loadDemo()">
+                <i class="ti ti-users" aria-hidden="true"></i> Demo names
+              </button>
+            </div>
+
+            <div class="name-list" id="nameList"></div>
+
+            <div class="wheel-area">
+              <div class="wheel-wrap">
+                <div class="pointer"></div>
+                <canvas id="wheelCanvas" width="300" height="300"></canvas>
+              </div>
+              <div class="result-box" id="resultBox">Add students to spin!</div>
+              <div class="controls">
+                <button
+                  class="btn btn-spin"
+                  id="spinBtn"
+                  onclick="spin()"
+                  disabled>
+                  Spin!
+                </button>
+                <button class="btn" onclick="resetWheel()">
+                  <i class="ti ti-refresh" aria-hidden="true"></i> Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="bulkModal">
+      <div class="modal">
+        <h3>Add multiple students</h3>
+        <p>
+          One name per line, or separate with commas. Duplicates are skipped.
+        </p>
+        <textarea
+          id="bulkText"
+          placeholder="e.g.&#10;Alice&#10;Bob, Carlos, Diana&#10;Ethan"></textarea>
+        <div class="modal-btns">
+          <button class="btn" onclick="closeBulk()">Cancel</button>
+          <button class="btn btn-spin" onclick="confirmBulk()">
+            <i class="ti ti-check" aria-hidden="true"></i> Add all
           </button>
         </div>
       </div>
@@ -310,7 +603,64 @@
         ["#E6F1FB", "#0C447C"],
       ];
 
-      let allNames = [];
+      const DEMO = [
+        "Alice",
+        "Bob",
+        "Carlos",
+        "Diana",
+        "Ethan",
+        "Fatima",
+        "George",
+        "Hannah",
+        "Ivan",
+        "Jasmine",
+      ];
+      const PREBUILT = [
+        {
+          name: "Math 101",
+          students: [
+            "Alice",
+            "Bob",
+            "Carlos",
+            "Diana",
+            "Ethan",
+            "Fatima",
+            "George",
+            "Hannah",
+          ],
+        },
+        {
+          name: "Science 5A",
+          students: [
+            "Ivan",
+            "Jasmine",
+            "Kevin",
+            "Laura",
+            "Mike",
+            "Nina",
+            "Oscar",
+            "Priya",
+          ],
+        },
+        {
+          name: "English B",
+          students: [
+            "Quinn",
+            "Rosa",
+            "Sam",
+            "Tina",
+            "Uma",
+            "Victor",
+            "Wendy",
+            "Xander",
+            "Yara",
+            "Zoe",
+          ],
+        },
+      ];
+
+      let classes = {};
+      let activeId = null;
       let remaining = [];
       let spinning = false;
       let angle = 0;
@@ -318,135 +668,302 @@
 
       const canvas = document.getElementById("wheelCanvas");
       const ctx = canvas.getContext("2d");
-      const nameInput = document.getElementById("nameInput");
-      const spinBtn = document.getElementById("spinBtn");
-      const resultBox = document.getElementById("resultBox");
-      const nameListEl = document.getElementById("nameList");
 
-      nameInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") addName();
-      });
+      function save() {
+        try {
+          localStorage.setItem("wheelClasses", JSON.stringify(classes));
+          localStorage.setItem("wheelActive", activeId || "");
+        } catch (e) {}
+      }
+      function loadStorage() {
+        try {
+          const d = localStorage.getItem("wheelClasses");
+          if (d) classes = JSON.parse(d);
+          const a = localStorage.getItem("wheelActive");
+          if (a && classes[a]) activeId = a;
+        } catch (e) {}
+      }
 
-      function addName() {
-        const val = nameInput.value.trim();
-        if (!val) return;
-        if (allNames.includes(val)) {
-          nameInput.value = "";
+      loadStorage();
+      if (Object.keys(classes).length === 0) {
+        PREBUILT.forEach((p) => {
+          const id = uid();
+          classes[id] = { name: p.name, students: [...p.students] };
+        });
+        save();
+      }
+
+      function uid() {
+        return "c" + Date.now() + Math.random().toString(36).slice(2, 6);
+      }
+      function esc(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function renderSidebar() {
+        const el = document.getElementById("classList");
+        const ids = Object.keys(classes);
+        if (!ids.length) {
+          el.innerHTML =
+            '<p style="font-size:12px;color:#888;padding:4px 0;">No classes yet</p>';
           return;
         }
-        allNames.push(val);
-        remaining.push(val);
-        nameInput.value = "";
+        el.innerHTML = ids
+          .map((id) => {
+            const c = classes[id];
+            return `<div class="class-item${id === activeId ? " active" : ""}" onclick="selectClass('${id}')">
+        <span class="ci-name">${esc(c.name)}</span>
+        <span class="ci-count">${c.students.length}</span>
+        <button class="ci-del" onclick="deleteClass(event,'${id}')" title="Delete class"><i class="ti ti-trash" style="font-size:13px;" aria-hidden="true"></i></button>
+      </div>`;
+          })
+          .join("");
+      }
+
+      function createClass() {
+        const inp = document.getElementById("newClassName");
+        const name = inp.value.trim();
+        if (!name) return;
+        const id = uid();
+        classes[id] = { name, students: [] };
+        inp.value = "";
+        save();
+        selectClass(id);
+      }
+
+      function deleteClass(e, id) {
+        e.stopPropagation();
+        if (!confirm('Delete "' + classes[id].name + '"?')) return;
+        delete classes[id];
+        if (activeId === id) {
+          activeId = null;
+          showEmpty();
+        }
+        save();
+        renderSidebar();
+      }
+
+      function selectClass(id) {
+        activeId = id;
+        remaining = [...classes[id].students];
+        angle = 0;
+        spinning = false;
+        if (animId) cancelAnimationFrame(animId);
+        save();
+        renderSidebar();
+        showEditor();
+      }
+
+      function showEmpty() {
+        document.getElementById("emptyState").style.display = "";
+        document.getElementById("classEditor").style.display = "none";
+      }
+
+      function showEditor() {
+        const c = classes[activeId];
+        document.getElementById("emptyState").style.display = "none";
+        document.getElementById("classEditor").style.display = "";
+        document.getElementById("classTitle").textContent = c.name;
+        document.getElementById("resultBox").textContent = c.students.length
+          ? "Ready to spin!"
+          : "Add students to spin!";
         renderNameList();
         drawWheel();
         updateUI();
+      }
+
+      function startRename() {
+        const c = classes[activeId];
+        const titleEl = document.getElementById("classTitle");
+        titleEl.outerHTML = `<input class="edit-name-input" id="classTitle" value="${esc(c.name)}" onblur="finishRename()" onkeydown="if(event.key==='Enter')this.blur()" />`;
+        document.getElementById("classTitle").focus();
+      }
+
+      function finishRename() {
+        const inp = document.getElementById("classTitle");
+        const val = inp.value.trim() || classes[activeId].name;
+        classes[activeId].name = val;
+        save();
+        renderSidebar();
+        inp.outerHTML = `<span class="panel-title" id="classTitle">${esc(val)}</span>`;
+      }
+
+      function addName() {
+        const inp = document.getElementById("nameInput");
+        const val = inp.value.trim();
+        if (!val || !activeId) return;
+        if (!classes[activeId].students.includes(val)) {
+          classes[activeId].students.push(val);
+          if (!remaining.includes(val)) remaining.push(val);
+          save();
+        }
+        inp.value = "";
+        renderNameList();
+        drawWheel();
+        updateUI();
+        renderSidebar();
       }
 
       function removeName(name) {
-        allNames = allNames.filter((n) => n !== name);
+        if (!activeId) return;
+        classes[activeId].students = classes[activeId].students.filter(
+          (n) => n !== name,
+        );
         remaining = remaining.filter((n) => n !== name);
+        save();
         renderNameList();
         drawWheel();
         updateUI();
+        renderSidebar();
       }
 
       function loadDemo() {
-        const demo = [
-          "Alice",
-          "Bob",
-          "Carlos",
-          "Diana",
-          "Ethan",
-          "Fatima",
-          "George",
-          "Hannah",
-          "Ivan",
-          "Jasmine",
-        ];
-        demo.forEach((n) => {
-          if (!allNames.includes(n)) {
-            allNames.push(n);
+        if (!activeId) return;
+        DEMO.forEach((n) => {
+          if (!classes[activeId].students.includes(n)) {
+            classes[activeId].students.push(n);
             remaining.push(n);
           }
         });
+        save();
         renderNameList();
         drawWheel();
         updateUI();
+        renderSidebar();
       }
 
+      function openBulk() {
+        document.getElementById("bulkText").value = "";
+        document.getElementById("bulkModal").classList.add("open");
+        document.getElementById("bulkText").focus();
+      }
+
+      function closeBulk() {
+        document.getElementById("bulkModal").classList.remove("open");
+      }
+
+      function confirmBulk() {
+        const raw = document.getElementById("bulkText").value;
+        const names = raw
+          .split(/[\n,]/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0 && s.length <= 30);
+        let added = 0;
+        names.forEach((n) => {
+          if (!classes[activeId].students.includes(n)) {
+            classes[activeId].students.push(n);
+            remaining.push(n);
+            added++;
+          }
+        });
+        save();
+        renderNameList();
+        drawWheel();
+        updateUI();
+        renderSidebar();
+        closeBulk();
+        if (added > 0)
+          document.getElementById("resultBox").textContent =
+            `Added ${added} student${added > 1 ? "s" : ""}!`;
+      }
+
+      document
+        .getElementById("bulkModal")
+        .addEventListener("click", function (e) {
+          if (e.target === this) closeBulk();
+        });
+
+      document.getElementById("nameInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") addName();
+      });
+      document
+        .getElementById("newClassName")
+        .addEventListener("keydown", (e) => {
+          if (e.key === "Enter") createClass();
+        });
+
       function renderNameList() {
-        if (allNames.length === 0) {
-          nameListEl.innerHTML =
-            '<p class="empty-hint">No students yet — add names above</p>';
+        const el = document.getElementById("nameList");
+        if (!activeId || !classes[activeId].students.length) {
+          el.innerHTML =
+            '<p class="hint">No students yet — add names above</p>';
           return;
         }
-        nameListEl.innerHTML = allNames
+        el.innerHTML = classes[activeId].students
           .map((n) => {
-            const inRemaining = remaining.includes(n);
-            const style = inRemaining
-              ? ""
-              : "opacity:0.4; text-decoration:line-through;";
-            return `<div class="name-tag" style="${style}">
-          <span>${n}</span>
-          <button onclick="removeName('${n.replace(/'/g, "\\'")}')"><i class="ti ti-x" aria-hidden="true"></i></button>
-        </div>`;
+            const picked = !remaining.includes(n);
+            return `<div class="name-tag${picked ? " picked" : ""}">
+        <span>${esc(n)}</span>
+        <button onclick="removeName('${n.replace(/'/g, "\\'")}') " title="Remove ${esc(n)}"><i class="ti ti-x" aria-hidden="true"></i></button>
+      </div>`;
           })
           .join("");
       }
 
       function updateUI() {
-        spinBtn.disabled = remaining.length < 1 || spinning;
-        if (remaining.length === 0 && allNames.length > 0) {
-          resultBox.textContent = "Everyone picked! Hit reset to start over.";
+        const btn = document.getElementById("spinBtn");
+        btn.disabled = remaining.length < 1 || spinning;
+        if (
+          remaining.length === 0 &&
+          activeId &&
+          classes[activeId].students.length > 0
+        ) {
+          document.getElementById("resultBox").textContent =
+            "Everyone picked! Hit reset.";
         }
       }
 
       function drawWheel() {
         const n = remaining.length;
-        ctx.clearRect(0, 0, 320, 320);
+        ctx.clearRect(0, 0, 300, 300);
         if (n === 0) {
           ctx.beginPath();
-          ctx.arc(160, 160, 155, 0, Math.PI * 2);
+          ctx.arc(150, 150, 145, 0, Math.PI * 2);
           ctx.fillStyle = "#E1F5EE";
           ctx.fill();
           ctx.strokeStyle = "#9FE1CB";
           ctx.lineWidth = 3;
           ctx.stroke();
           ctx.fillStyle = "#0F6E56";
-          ctx.font = "500 15px system-ui, sans-serif";
+          ctx.font = "500 14px system-ui,sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText("All done!", 160, 168);
+          ctx.fillText("All done!", 150, 158);
           return;
         }
         const slice = (Math.PI * 2) / n;
         remaining.forEach((name, i) => {
           const [bg, fg] = COLORS[i % COLORS.length];
-          const start = angle + i * slice;
-          const end = start + slice;
+          const start = angle + i * slice,
+            end = start + slice;
           ctx.beginPath();
-          ctx.moveTo(160, 160);
-          ctx.arc(160, 160, 155, start, end);
+          ctx.moveTo(150, 150);
+          ctx.arc(150, 150, 145, start, end);
           ctx.closePath();
           ctx.fillStyle = bg;
           ctx.fill();
           ctx.strokeStyle = fg;
           ctx.lineWidth = 2;
           ctx.stroke();
-
           ctx.save();
-          ctx.translate(160, 160);
+          ctx.translate(150, 150);
           ctx.rotate(start + slice / 2);
           ctx.textAlign = "right";
-          const fontSize = n > 8 ? 11 : n > 5 ? 13 : 15;
-          ctx.font = `500 ${fontSize}px system-ui, sans-serif`;
+          const fs = n > 8 ? 11 : n > 5 ? 13 : 14;
+          ctx.font = `500 ${fs}px system-ui,sans-serif`;
           ctx.fillStyle = fg;
-          const label = name.length > 14 ? name.slice(0, 13) + "…" : name;
-          ctx.fillText(label, 148, 5);
+          ctx.fillText(
+            name.length > 14 ? name.slice(0, 13) + "…" : name,
+            138,
+            5,
+          );
           ctx.restore();
         });
-
         ctx.beginPath();
-        ctx.arc(160, 160, 20, 0, Math.PI * 2);
+        ctx.arc(150, 150, 18, 0, Math.PI * 2);
         ctx.fillStyle = "#fff";
         ctx.fill();
         ctx.strokeStyle = "#ccc";
@@ -457,37 +974,32 @@
       function spin() {
         if (spinning || remaining.length === 0) return;
         spinning = true;
-        spinBtn.disabled = true;
-        resultBox.textContent = "🎲 Spinning…";
-
-        const n = remaining.length;
-        const sliceAngle = (Math.PI * 2) / n;
+        document.getElementById("spinBtn").disabled = true;
+        document.getElementById("resultBox").textContent = "🎲 Spinning…";
+        const n = remaining.length,
+          sliceAngle = (Math.PI * 2) / n;
         const winnerIdx = Math.floor(Math.random() * n);
         const extraSpins = Math.PI * 2 * (5 + Math.floor(Math.random() * 3));
         const targetOffset =
           Math.PI * 1.5 - (winnerIdx * sliceAngle + sliceAngle / 2);
         const targetAngle = extraSpins + targetOffset - (angle % (Math.PI * 2));
-
         let start = null;
         const duration = 3500 + Math.random() * 1000;
-
         function ease(t) {
           return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
         }
-
         function frame(ts) {
           if (!start) start = ts;
-          const elapsed = ts - start;
-          const progress = Math.min(elapsed / duration, 1);
-          const eased = ease(progress);
-          angle = (angle % (Math.PI * 2)) + eased * targetAngle;
+          const progress = Math.min((ts - start) / duration, 1);
+          angle = (angle % (Math.PI * 2)) + ease(progress) * targetAngle;
           drawWheel();
           if (progress < 1) {
             animId = requestAnimationFrame(frame);
           } else {
             spinning = false;
             const picked = remaining[winnerIdx];
-            resultBox.textContent = "🎉 " + picked + "!";
+            document.getElementById("resultBox").textContent =
+              "🎉 " + picked + "!";
             remaining.splice(winnerIdx, 1);
             renderNameList();
             setTimeout(() => {
@@ -502,18 +1014,22 @@
       function resetWheel() {
         if (animId) cancelAnimationFrame(animId);
         spinning = false;
-        remaining = [...allNames];
         angle = 0;
-        resultBox.textContent = allNames.length
+        if (activeId) remaining = [...classes[activeId].students];
+        document.getElementById("resultBox").textContent = remaining.length
           ? "Ready to spin!"
-          : "Add names to spin!";
+          : "Add students to spin!";
         renderNameList();
         drawWheel();
         updateUI();
       }
 
-      drawWheel();
-      updateUI();
+      renderSidebar();
+      if (activeId && classes[activeId]) selectClass(activeId);
+      else {
+        const ids = Object.keys(classes);
+        if (ids.length) selectClass(ids[0]);
+      }
     </script>
   </body>
 </html>
