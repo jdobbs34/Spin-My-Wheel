@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spin the Wheel — Student Picker</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #f5f5f2;
+        color: #1a1a18;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 2rem 1rem;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 680px;
+      }
+
+      h1 {
+        font-size: 22px;
+        font-weight: 500;
+        margin-bottom: 1.25rem;
+        color: #1a1a18;
+      }
+
+      .top-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .top-bar input {
+        flex: 1;
+        min-width: 160px;
+        padding: 8px 12px;
+        border: 0.5px solid #aaa;
+        border-radius: 8px;
+        font-size: 14px;
+        background: #fff;
+        color: #1a1a18;
+      }
+
+      .top-bar input:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #ccc;
+      }
+
+      button {
+        padding: 8px 16px;
+        border: 0.5px solid #aaa;
+        border-radius: 8px;
+        background: #fff;
+        color: #1a1a18;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      button:hover {
+        background: #ebebeb;
+      }
+      button:active {
+        transform: scale(0.98);
+      }
+
+      .btn-spin {
+        background: #534ab7;
+        color: #fff;
+        border-color: #534ab7;
+        font-weight: 500;
+        padding: 10px 28px;
+        font-size: 15px;
+      }
+
+      .btn-spin:hover {
+        background: #3c3489;
+        border-color: #3c3489;
+      }
+      .btn-spin:disabled {
+        background: #e0e0e0;
+        color: #999;
+        border-color: #ddd;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .wheel-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .wheel-wrap {
+        position: relative;
+        width: 320px;
+        height: 320px;
+      }
+
+      canvas {
+        border-radius: 50%;
+        display: block;
+      }
+
+      .pointer {
+        position: absolute;
+        top: -18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 14px solid transparent;
+        border-right: 14px solid transparent;
+        border-top: 28px solid #d85a30;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+        z-index: 10;
+      }
+
+      .result-box {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 500;
+        color: #1a1a18;
+        background: #ebebeb;
+        border-radius: 12px;
+        padding: 10px 24px;
+        border: 0.5px solid #ddd;
+        width: 100%;
+        max-width: 320px;
+        text-align: center;
+      }
+
+      .controls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .name-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: center;
+        max-width: 360px;
+        margin-top: 0.5rem;
+      }
+
+      .name-tag {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: #ebebeb;
+        border: 0.5px solid #ddd;
+        border-radius: 20px;
+        padding: 4px 10px 4px 12px;
+        font-size: 13px;
+        color: #1a1a18;
+      }
+
+      .name-tag button {
+        border: none;
+        background: none;
+        padding: 0;
+        width: 18px;
+        height: 18px;
+        font-size: 14px;
+        color: #666;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
+
+      .name-tag button:hover {
+        background: #ddd;
+        color: #1a1a18;
+      }
+
+      .empty-hint {
+        font-size: 13px;
+        color: #888;
+        text-align: center;
+        padding: 0.5rem;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #1a1a18;
+          color: #f0efe8;
+        }
+        h1 {
+          color: #f0efe8;
+        }
+        .top-bar input {
+          background: #2c2c2a;
+          border-color: #444;
+          color: #f0efe8;
+        }
+        .top-bar input:focus {
+          box-shadow: 0 0 0 2px #555;
+        }
+        button {
+          background: #2c2c2a;
+          border-color: #444;
+          color: #f0efe8;
+        }
+        button:hover {
+          background: #3a3a38;
+        }
+        .result-box {
+          background: #2c2c2a;
+          border-color: #444;
+          color: #f0efe8;
+        }
+        .name-tag {
+          background: #2c2c2a;
+          border-color: #444;
+          color: #f0efe8;
+        }
+        .name-tag button {
+          color: #aaa;
+        }
+        .name-tag button:hover {
+          background: #3a3a38;
+          color: #f0efe8;
+        }
+        .empty-hint {
+          color: #888;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Spin the Wheel — Student Picker</h1>
+
+      <div class="top-bar">
+        <input
+          type="text"
+          id="nameInput"
+          placeholder="Add student name..."
+          maxlength="30" />
+        <button onclick="addName()">
+          <i class="ti ti-plus" aria-hidden="true"></i> Add
+        </button>
+        <button onclick="loadDemo()">
+          <i class="ti ti-users" aria-hidden="true"></i> Load demo class
+        </button>
+      </div>
+
+      <div class="name-list" id="nameList"></div>
+
+      <div class="wheel-area" style="margin-top: 1.25rem">
+        <div class="wheel-wrap">
+          <div class="pointer"></div>
+          <canvas id="wheelCanvas" width="320" height="320"></canvas>
+        </div>
+        <div class="result-box" id="resultBox">Add names to spin!</div>
+        <div class="controls">
+          <button class="btn-spin" id="spinBtn" onclick="spin()" disabled>
+            Spin!
+          </button>
+          <button onclick="resetWheel()">
+            <i class="ti ti-refresh" aria-hidden="true"></i> Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const COLORS = [
+        ["#EEEDFE", "#534AB7"],
+        ["#E1F5EE", "#0F6E56"],
+        ["#FAECE7", "#993C1D"],
+        ["#FBEAF0", "#993556"],
+        ["#E6F1FB", "#185FA5"],
+        ["#EAF3DE", "#3B6D11"],
+        ["#FAEEDA", "#854F0B"],
+        ["#FCEBEB", "#A32D2D"],
+        ["#E1F5EE", "#085041"],
+        ["#EEEDFE", "#3C3489"],
+        ["#FAECE7", "#712B13"],
+        ["#E6F1FB", "#0C447C"],
+      ];
+
+      let allNames = [];
+      let remaining = [];
+      let spinning = false;
+      let angle = 0;
+      let animId = null;
+
+      const canvas = document.getElementById("wheelCanvas");
+      const ctx = canvas.getContext("2d");
+      const nameInput = document.getElementById("nameInput");
+      const spinBtn = document.getElementById("spinBtn");
+      const resultBox = document.getElementById("resultBox");
+      const nameListEl = document.getElementById("nameList");
+
+      nameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") addName();
+      });
+
+      function addName() {
+        const val = nameInput.value.trim();
+        if (!val) return;
+        if (allNames.includes(val)) {
+          nameInput.value = "";
+          return;
+        }
+        allNames.push(val);
+        remaining.push(val);
+        nameInput.value = "";
+        renderNameList();
+        drawWheel();
+        updateUI();
+      }
+
+      function removeName(name) {
+        allNames = allNames.filter((n) => n !== name);
+        remaining = remaining.filter((n) => n !== name);
+        renderNameList();
+        drawWheel();
+        updateUI();
+      }
+
+      function loadDemo() {
+        const demo = [
+          "Alice",
+          "Bob",
+          "Carlos",
+          "Diana",
+          "Ethan",
+          "Fatima",
+          "George",
+          "Hannah",
+          "Ivan",
+          "Jasmine",
+        ];
+        demo.forEach((n) => {
+          if (!allNames.includes(n)) {
+            allNames.push(n);
+            remaining.push(n);
+          }
+        });
+        renderNameList();
+        drawWheel();
+        updateUI();
+      }
+
+      function renderNameList() {
+        if (allNames.length === 0) {
+          nameListEl.innerHTML =
+            '<p class="empty-hint">No students yet — add names above</p>';
+          return;
+        }
+        nameListEl.innerHTML = allNames
+          .map((n) => {
+            const inRemaining = remaining.includes(n);
+            const style = inRemaining
+              ? ""
+              : "opacity:0.4; text-decoration:line-through;";
+            return `<div class="name-tag" style="${style}">
+          <span>${n}</span>
+          <button onclick="removeName('${n.replace(/'/g, "\\'")}')"><i class="ti ti-x" aria-hidden="true"></i></button>
+        </div>`;
+          })
+          .join("");
+      }
+
+      function updateUI() {
+        spinBtn.disabled = remaining.length < 1 || spinning;
+        if (remaining.length === 0 && allNames.length > 0) {
+          resultBox.textContent = "Everyone picked! Hit reset to start over.";
+        }
+      }
+
+      function drawWheel() {
+        const n = remaining.length;
+        ctx.clearRect(0, 0, 320, 320);
+        if (n === 0) {
+          ctx.beginPath();
+          ctx.arc(160, 160, 155, 0, Math.PI * 2);
+          ctx.fillStyle = "#E1F5EE";
+          ctx.fill();
+          ctx.strokeStyle = "#9FE1CB";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          ctx.fillStyle = "#0F6E56";
+          ctx.font = "500 15px system-ui, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("All done!", 160, 168);
+          return;
+        }
+        const slice = (Math.PI * 2) / n;
+        remaining.forEach((name, i) => {
+          const [bg, fg] = COLORS[i % COLORS.length];
+          const start = angle + i * slice;
+          const end = start + slice;
+          ctx.beginPath();
+          ctx.moveTo(160, 160);
+          ctx.arc(160, 160, 155, start, end);
+          ctx.closePath();
+          ctx.fillStyle = bg;
+          ctx.fill();
+          ctx.strokeStyle = fg;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.save();
+          ctx.translate(160, 160);
+          ctx.rotate(start + slice / 2);
+          ctx.textAlign = "right";
+          const fontSize = n > 8 ? 11 : n > 5 ? 13 : 15;
+          ctx.font = `500 ${fontSize}px system-ui, sans-serif`;
+          ctx.fillStyle = fg;
+          const label = name.length > 14 ? name.slice(0, 13) + "…" : name;
+          ctx.fillText(label, 148, 5);
+          ctx.restore();
+        });
+
+        ctx.beginPath();
+        ctx.arc(160, 160, 20, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+        ctx.strokeStyle = "#ccc";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      function spin() {
+        if (spinning || remaining.length === 0) return;
+        spinning = true;
+        spinBtn.disabled = true;
+        resultBox.textContent = "🎲 Spinning…";
+
+        const n = remaining.length;
+        const sliceAngle = (Math.PI * 2) / n;
+        const winnerIdx = Math.floor(Math.random() * n);
+        const extraSpins = Math.PI * 2 * (5 + Math.floor(Math.random() * 3));
+        const targetOffset =
+          Math.PI * 1.5 - (winnerIdx * sliceAngle + sliceAngle / 2);
+        const targetAngle = extraSpins + targetOffset - (angle % (Math.PI * 2));
+
+        let start = null;
+        const duration = 3500 + Math.random() * 1000;
+
+        function ease(t) {
+          return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+
+        function frame(ts) {
+          if (!start) start = ts;
+          const elapsed = ts - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = ease(progress);
+          angle = (angle % (Math.PI * 2)) + eased * targetAngle;
+          drawWheel();
+          if (progress < 1) {
+            animId = requestAnimationFrame(frame);
+          } else {
+            spinning = false;
+            const picked = remaining[winnerIdx];
+            resultBox.textContent = "🎉 " + picked + "!";
+            remaining.splice(winnerIdx, 1);
+            renderNameList();
+            setTimeout(() => {
+              drawWheel();
+              updateUI();
+            }, 800);
+          }
+        }
+        animId = requestAnimationFrame(frame);
+      }
+
+      function resetWheel() {
+        if (animId) cancelAnimationFrame(animId);
+        spinning = false;
+        remaining = [...allNames];
+        angle = 0;
+        resultBox.textContent = allNames.length
+          ? "Ready to spin!"
+          : "Add names to spin!";
+        renderNameList();
+        drawWheel();
+        updateUI();
+      }
+
+      drawWheel();
+      updateUI();
+    </script>
+  </body>
+</html>
