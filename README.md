@@ -3,10 +3,9 @@
 A lightweight, browser-based classroom tool for randomly selecting students using an animated spin wheel. No installation, no server, no sign-up — just open the HTML file and go.
 
 ## Links
-Website - https://spintheweheel.netlify.app/
+Website - https://spinmywheel.netlify.app/
 
 Github - https://github.com/jdobbs34/Spin-the-Wheel
-
 
 
 ## Features
