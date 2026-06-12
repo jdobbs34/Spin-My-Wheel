@@ -561,7 +561,7 @@
         const targetAngleMod =
           ((targetFinalAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
         let delta = targetAngleMod - currentAngleMod;
-        if (delta <= 0) delta += Math.PI * 2;
+        if (delta < 0.001) delta += Math.PI * 2;
         const totalRotation = extraSpins + delta;
         const startAngle = angle;
 
