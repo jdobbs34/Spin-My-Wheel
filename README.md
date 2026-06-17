@@ -7,9 +7,7 @@ Website - https://spinmywheel.netlify.app/
 
 Github - https://github.com/jdobbs34/Spin-the-Wheel
 
-
 ## Features
-
 
 Spin the wheel — smooth animated spin that lands on a random student
 Auto-removes picked students — each selected name disappears from the wheel so no one gets picked twice
@@ -22,8 +20,6 @@ Persistent storage — classes and rosters are saved to your browser's localStor
 3 prebuilt demo classes — loaded on first use so you can try it right away
 Dark mode support — automatically follows your system preference
 Responsive layout — works on desktop and mobile
-
-
 
 ## Getting Started
 
@@ -59,7 +55,6 @@ spin-the-wheel.html   ← everything lives here (HTML + CSS + JS)
 README.md
 
 No dependencies to install. The only external resource is the Tabler Icons webfont, loaded via CDN for the UI icons.
-
 
 ## Browser Compatibility
 

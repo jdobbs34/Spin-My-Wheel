@@ -168,6 +168,13 @@ h1 {
   background: #0c447c;
   border-color: #0c447c;
 }
+.btn-danger-outline {
+  border-color: #e5a6a6;
+  color: #a32d2d;
+}
+.btn-danger-outline:hover {
+  background: #fcebeb;
+}
 .main-panel {
   display: flex;
   flex-direction: column;
@@ -302,7 +309,7 @@ canvas {
   font-weight: 500;
   box-shadow: 0 0 0 2px #f0b42933;
 }
-.name-tag.winner-confirm {
+.name-tag.confirm-remove {
   background: #fcebeb;
   border-color: #f09595;
   color: #a32d2d;
