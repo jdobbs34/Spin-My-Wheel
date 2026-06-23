@@ -151,7 +151,7 @@
     </div>
 
     <script>
-      // ── Colours: boy slices use blues/greens, girl slices use pinks/purples
+      // ── Colors: boy slices use blues/greens, girl slices use pinks/purples
       const BOY_COLORS = [
         ["#E6F1FB", "#185FA5"],
         ["#EAF3DE", "#3B6D11"],
@@ -193,7 +193,7 @@
         "Jasmine",
         "Laura",
         "Nina",
-        "Priya",
+        "Pima",
       ];
       const PREBUILT = [
         {
@@ -219,7 +219,7 @@
             { n: "Mike", g: "boy" },
             { n: "Nina", g: "girl" },
             { n: "Oscar", g: "boy" },
-            { n: "Priya", g: "girl" },
+            { n: "Oriya", g: "girl" },
           ],
         },
         {
@@ -232,7 +232,7 @@
             { n: "Uma", g: "girl" },
             { n: "Victor", g: "boy" },
             { n: "Wendy", g: "girl" },
-            { n: "Xander", g: "boy" },
+            { n: "Andre", g: "boy" },
             { n: "Yara", g: "girl" },
             { n: "Zoe", g: "girl" },
           ],
@@ -700,22 +700,24 @@
           if (!startTime) startTime = ts;
           const progress = Math.min((ts - startTime) / duration, 1);
           angle = startAngle + ease(progress) * totalRotation;
-          drawWheel();
           if (progress < 1) {
+            drawWheel();
             animId = requestAnimationFrame(frame);
           } else {
+            // Snap to exact final angle FIRST, then draw ONCE with that locked angle
             angle = normaliseAngle(startAngle + totalRotation);
             spinning = false;
             const winner = spinPool[winnerIdx];
             lastWinner = winner.n;
-            // Advance turn in alternating mode
+            // Draw the wheel with the snapped angle before anything else changes
+            drawWheel();
+            // Now update UI (advance turn, update labels) — no further drawWheel() calls
             if (alternateMode) nextTurn = nextTurn === "boy" ? "girl" : "boy";
             const turnLabel =
               winner.g === "boy" ? "♂ " : winner.g === "girl" ? "♀ " : "";
             document.getElementById("resultBox").textContent =
               `🎉 ${turnLabel}${winner.n}! (click their name to remove)`;
             renderNameList();
-            drawWheel();
             updateUI();
           }
         }
