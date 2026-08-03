@@ -16,7 +16,7 @@ body {
   padding: 1.5rem 1rem;
 }
 .app {
-  max-width: 860px;
+  max-width: 980px;
   margin: 0 auto;
 }
 h1 {
@@ -26,10 +26,12 @@ h1 {
 }
 .two-col {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 240px 1fr;
   gap: 1rem;
   align-items: start;
 }
+
+/* ── Sidebar ── */
 .sidebar {
   background: #fff;
   border: 0.5px solid #ddd;
@@ -118,7 +120,149 @@ h1 {
   outline: none;
   box-shadow: 0 0 0 2px #ddd;
 }
-.new-class-row button,
+.new-class-row button {
+  padding: 6px 10px;
+  border: 0.5px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  color: #1a1a18;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+  transition: background 0.1s;
+}
+.new-class-row button:hover {
+  background: #f0efea;
+}
+
+/* ── Groups ladder ── */
+.groups-section {
+  margin-top: 14px;
+  border-top: 0.5px solid #eee;
+  padding-top: 12px;
+}
+.groups-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.groups-header-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #888;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex: 1;
+}
+.groups-header button {
+  padding: 3px 8px;
+  border: 0.5px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: #1a1a18;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.groups-header button:hover {
+  background: #f0efea;
+}
+.group-count-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #888;
+}
+.group-count-row input[type="number"] {
+  width: 48px;
+  padding: 4px 6px;
+  border: 0.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 12px;
+  background: #fff;
+  color: #1a1a18;
+}
+.group-count-row button {
+  padding: 4px 10px;
+  border: 0.5px solid #534ab7;
+  border-radius: 6px;
+  background: #534ab7;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.group-card {
+  background: #f9f9f7;
+  border: 0.5px solid #ddd;
+  border-radius: 8px;
+  padding: 8px;
+}
+.group-card-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.group-card-title span {
+  flex: 1;
+}
+.group-drop-zone {
+  min-height: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 2px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.group-drop-zone.drag-over {
+  background: #eaf3de;
+  border: 1.5px dashed #3b6d11;
+}
+.group-chip {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  cursor: grab;
+  background: #fff;
+  border: 0.5px solid #ccc;
+  color: #1a1a18;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  transition: opacity 0.1s;
+}
+.group-chip.boy {
+  background: #e6f1fb;
+  border-color: #a8c8ef;
+  color: #185fa5;
+}
+.group-chip.girl {
+  background: #fbeaf0;
+  border-color: #e5a6c8;
+  color: #993556;
+}
+.group-chip.dragging {
+  opacity: 0.4;
+}
+
+/* ── Buttons ── */
 .btn {
   padding: 6px 10px;
   border: 0.5px solid #ccc;
@@ -133,7 +277,6 @@ h1 {
   font-family: inherit;
   transition: background 0.1s;
 }
-.new-class-row button:hover,
 .btn:hover {
   background: #f0efea;
 }
@@ -168,6 +311,8 @@ h1 {
   background: #0c447c;
   border-color: #0c447c;
 }
+
+/* ── Main panel ── */
 .main-panel {
   display: flex;
   flex-direction: column;
@@ -196,8 +341,6 @@ h1 {
   flex: 1;
   padding: 2px 4px;
 }
-
-/* Add student row */
 .top-bar {
   display: flex;
   gap: 8px;
@@ -219,8 +362,6 @@ h1 {
   outline: none;
   box-shadow: 0 0 0 2px #ddd;
 }
-
-/* Gender toggle for add row */
 .gender-toggle {
   display: flex;
   border: 0.5px solid #ccc;
@@ -253,8 +394,6 @@ h1 {
 .gender-toggle button:not(:last-child) {
   border-right: 0.5px solid #ccc;
 }
-
-/* Alternating mode bar */
 .mode-bar {
   display: flex;
   align-items: center;
@@ -275,14 +414,13 @@ h1 {
   font-size: 12px;
   color: #888;
 }
-.mode-next span {
+.next-boy {
+  color: #185fa5;
   font-weight: 500;
 }
-.mode-next .next-boy {
-  color: #185fa5;
-}
-.mode-next .next-girl {
+.next-girl {
   color: #993556;
+  font-weight: 500;
 }
 .toggle-switch {
   position: relative;
@@ -321,7 +459,7 @@ h1 {
   transform: translateX(18px);
 }
 
-/* Name list */
+/* ── Name list ── */
 .name-list-label {
   font-size: 12px;
   color: #888;
@@ -341,12 +479,11 @@ h1 {
   border-radius: 20px;
   padding: 4px 6px 4px 10px;
   font-size: 12px;
-  cursor: default;
   user-select: none;
   transition: all 0.15s;
   background: #ebebeb;
   color: #1a1a18;
-  gap: 4px;
+  gap: 3px;
 }
 .name-tag.boy {
   background: #e6f1fb;
@@ -371,7 +508,7 @@ h1 {
   border-color: #f09595 !important;
   color: #a32d2d !important;
 }
-.tag-gender-btn {
+.tag-btn {
   border: none;
   background: none;
   padding: 2px 4px;
@@ -379,37 +516,30 @@ h1 {
   font-size: 11px;
   cursor: pointer;
   color: inherit;
-  opacity: 0.7;
+  opacity: 0.6;
   transition:
     opacity 0.1s,
     background 0.1s;
   flex-shrink: 0;
+  line-height: 1;
 }
-.tag-gender-btn:hover {
+.tag-btn:hover {
   opacity: 1;
   background: rgba(0, 0, 0, 0.08);
 }
 .tag-remove-btn {
-  border: none;
-  background: none;
-  padding: 2px 4px;
-  border-radius: 10px;
-  font-size: 12px;
-  cursor: pointer;
-  color: inherit;
   opacity: 0;
-  transition: opacity 0.1s;
-  flex-shrink: 0;
+  font-size: 13px;
 }
 .name-tag:hover .tag-remove-btn {
   opacity: 0.6;
 }
 .tag-remove-btn:hover {
   opacity: 1 !important;
-  color: #c0392b;
+  color: #c0392b !important;
 }
 
-/* Wheel */
+/* ── Wheel ── */
 .wheel-area {
   display: flex;
   flex-direction: column;
@@ -424,6 +554,7 @@ h1 {
 canvas {
   border-radius: 50%;
   display: block;
+  cursor: pointer;
 }
 .pointer {
   position: absolute;
@@ -460,7 +591,6 @@ canvas {
   flex-wrap: wrap;
   justify-content: center;
 }
-
 .hint {
   font-size: 13px;
   color: #888;
@@ -473,7 +603,7 @@ canvas {
   font-size: 14px;
 }
 
-/* Bulk modal */
+/* ── Modals ── */
 .modal-overlay {
   display: none;
   position: fixed;
@@ -504,6 +634,20 @@ canvas {
   font-size: 13px;
   color: #888;
   margin-bottom: 10px;
+}
+.modal input[type="text"] {
+  width: 100%;
+  padding: 9px 12px;
+  border: 0.5px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  color: #1a1a18;
+  font-family: inherit;
+}
+.modal input[type="text"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #ddd;
 }
 .modal textarea {
   width: 100%;
@@ -536,7 +680,53 @@ canvas {
   margin-top: 12px;
 }
 
-@media (max-width: 600px) {
+/* ── Group turn banner ── */
+.group-banner-0 {
+  background: #eeedfe !important;
+  border-color: #534ab7 !important;
+  color: #534ab7;
+}
+.group-banner-1 {
+  background: #e1f5ee !important;
+  border-color: #0f6e56 !important;
+  color: #0f6e56;
+}
+.group-banner-2 {
+  background: #faece7 !important;
+  border-color: #993c1d !important;
+  color: #993c1d;
+}
+.group-banner-3 {
+  background: #fbeaf0 !important;
+  border-color: #993556 !important;
+  color: #993556;
+}
+.group-banner-4 {
+  background: #e6f1fb !important;
+  border-color: #185fa5 !important;
+  color: #185fa5;
+}
+.group-card.active-group {
+  border-color: #534ab7;
+  box-shadow: 0 0 0 2px #534ab733;
+}
+
+/* ── Wheel click tooltip ── */
+.wheel-tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  pointer-events: none;
+  white-space: nowrap;
+  display: none;
+  z-index: 20;
+  transform: translate(-50%, -110%);
+}
+
+@media (max-width: 620px) {
   .two-col {
     grid-template-columns: 1fr;
   }
@@ -548,16 +738,15 @@ canvas {
   }
   .sidebar,
   .modal,
-  .mode-bar {
+  .mode-bar,
+  .group-card {
     background: #2c2c2a;
     border-color: #444;
   }
   .class-item {
     color: #f0efe8;
   }
-  .class-item:hover,
-  .new-class-row button:hover,
-  .btn:hover {
+  .class-item:hover {
     background: #3a3a38;
   }
   .class-item.active {
@@ -566,6 +755,7 @@ canvas {
   }
   .new-class-row input,
   .top-bar input,
+  .modal input[type="text"],
   .modal textarea {
     background: #2c2c2a;
     border-color: #444;
@@ -576,6 +766,10 @@ canvas {
     background: #2c2c2a;
     border-color: #444;
     color: #f0efe8;
+  }
+  .new-class-row button:hover,
+  .btn:hover {
+    background: #3a3a38;
   }
   .result-box {
     background: #2c2c2a;
@@ -597,6 +791,14 @@ canvas {
     border-color: #80285a;
     color: #e87abf;
   }
+  .group-chip {
+    background: #3a3a38;
+    border-color: #555;
+    color: #f0efe8;
+  }
+  .group-card {
+    background: #252523;
+  }
   .modal h3 {
     color: #f0efe8;
   }
@@ -611,5 +813,13 @@ canvas {
   }
   .gender-toggle {
     border-color: #444;
+  }
+  .group-count-row input[type="number"] {
+    background: #2c2c2a;
+    border-color: #444;
+    color: #f0efe8;
+  }
+  .groups-section {
+    border-top-color: #444;
   }
 }

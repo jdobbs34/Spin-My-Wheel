@@ -15,6 +15,7 @@
     <div class="app">
       <h1>Spin the Wheel — Student Picker</h1>
       <div class="two-col">
+        <!-- ── Sidebar ── -->
         <div class="sidebar">
           <div class="sidebar-title">My classes</div>
           <div class="class-list" id="classList"></div>
@@ -28,8 +29,26 @@
               <i class="ti ti-plus"></i>
             </button>
           </div>
+
+          <!-- Groups ladder -->
+          <div class="groups-section" id="groupsSection" style="display: none">
+            <div class="groups-header">
+              <span class="groups-header-title">Groups</span>
+              <button onclick="clearGroups()" title="Clear groups">
+                ✕ Clear
+              </button>
+            </div>
+            <div class="group-count-row">
+              <span>Split into</span>
+              <input type="number" id="groupCount" value="2" min="2" max="10" />
+              <span>groups</span>
+              <button onclick="autoSplit()">Auto split</button>
+            </div>
+            <div class="group-list" id="groupList"></div>
+          </div>
         </div>
 
+        <!-- ── Main panel ── -->
         <div class="main-panel">
           <div class="empty-state" id="emptyState">
             <i
@@ -54,7 +73,6 @@
               </button>
             </div>
 
-            <!-- Add student row -->
             <div class="top-bar">
               <input
                 type="text"
@@ -77,7 +95,6 @@
               </button>
             </div>
 
-            <!-- Alternating mode bar -->
             <div class="mode-bar">
               <span class="mode-label">Alternating mode</span>
               <span class="mode-next" id="modeNext"></span>
@@ -94,9 +111,24 @@
             <div class="name-list" id="nameList"></div>
 
             <div class="wheel-area">
-              <div class="wheel-wrap">
+              <div
+                id="groupTurnBanner"
+                style="
+                  display: none;
+                  width: 100%;
+                  max-width: 300px;
+                  text-align: center;
+                  padding: 8px 16px;
+                  border-radius: 10px;
+                  font-size: 14px;
+                  font-weight: 500;
+                  border: 0.5px solid #ddd;
+                  background: #fff;
+                "></div>
+              <div class="wheel-wrap" style="position: relative">
                 <div class="pointer"></div>
                 <canvas id="wheelCanvas" width="300" height="300"></canvas>
+                <div class="wheel-tooltip" id="wheelTooltip"></div>
               </div>
               <div class="result-box" id="resultBox">Add students to spin!</div>
               <div class="controls">
@@ -117,7 +149,7 @@
       </div>
     </div>
 
-    <!-- Bulk add modal -->
+    <!-- Bulk modal -->
     <div class="modal-overlay" id="bulkModal">
       <div class="modal">
         <h3>Add multiple students</h3>
@@ -138,9 +170,6 @@
               ♀ Girl
             </button>
           </div>
-          <span style="font-size: 12px; color: #888"
-            >(you can change individually after)</span
-          >
         </div>
         <div class="modal-btns">
           <button class="btn" onclick="closeBulk()">Cancel</button>
@@ -151,8 +180,22 @@
       </div>
     </div>
 
+    <!-- Edit name modal -->
+    <div class="modal-overlay" id="editModal">
+      <div class="modal">
+        <h3>Edit student name</h3>
+        <p>Fix any spelling mistakes below.</p>
+        <input type="text" id="editNameInput" maxlength="30" />
+        <div class="modal-btns">
+          <button class="btn" onclick="closeEdit()">Cancel</button>
+          <button class="btn btn-spin" onclick="confirmEdit()">
+            <i class="ti ti-check"></i> Save
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script>
-      // ── Colors: boy slices use blues/greens, girl slices use pinks/purples
       const BOY_COLORS = [
         ["#E6F1FB", "#185FA5"],
         ["#EAF3DE", "#3B6D11"],
@@ -176,26 +219,6 @@
         ["#FCEBEB", "#A32D2D"],
       ];
 
-      const DEMO_BOYS = [
-        "Ethan",
-        "Carlos",
-        "George",
-        "Ivan",
-        "Kevin",
-        "Mike",
-        "Oscar",
-        "Victor",
-      ];
-      const DEMO_GIRLS = [
-        "Alice",
-        "Diana",
-        "Fatima",
-        "Hannah",
-        "Jasmine",
-        "Laura",
-        "Nina",
-        "Pima",
-      ];
       const PREBUILT = [
         {
           name: "Math 101",
@@ -220,7 +243,7 @@
             { n: "Mike", g: "boy" },
             { n: "Nina", g: "girl" },
             { n: "Oscar", g: "boy" },
-            { n: "Oriya", g: "girl" },
+            { n: "Priya", g: "girl" },
           ],
         },
         {
@@ -233,7 +256,7 @@
             { n: "Uma", g: "girl" },
             { n: "Victor", g: "boy" },
             { n: "Wendy", g: "girl" },
-            { n: "Andre", g: "boy" },
+            { n: "Xander", g: "boy" },
             { n: "Yara", g: "girl" },
             { n: "Zoe", g: "girl" },
           ],
@@ -248,22 +271,29 @@
 
       let classes = {},
         activeId = null;
-      // allNames: array of {n: string, g: 'boy'|'girl'|''}
       let allNames = [],
         removed = new Set(),
         lastWinner = null;
       let spinning = false,
         angle = 0,
         animId = null;
-      let alternateMode = false; // is alternating mode on?
-      let nextTurn = "boy"; // whose turn it is when alternating
-      let addGender = "boy"; // gender selected in add row
-      let bulkGender = "boy"; // gender selected in bulk modal
+      let alternateMode = false,
+        nextTurn = "boy";
+      let addGender = "boy",
+        bulkGender = "boy";
+      let groups = []; // [{name, members:[{n,g}]}]
+      let currentGroupIdx = 0; // which group's turn it is
+      let groupRemovedMap = {}; // {groupIdx: Set of removed names}
+      let groupLastWinner = {}; // {groupIdx: name}
+      let groupMode = false; // true when groups exist and group-spin is active
+      let editingName = null;
+      let dragName = null,
+        dragFromGroup = null;
 
       const canvas = document.getElementById("wheelCanvas");
       const ctx = canvas.getContext("2d");
 
-      // ── Storage
+      // ── Storage ──
       function save() {
         try {
           localStorage.setItem("wheelClasses", JSON.stringify(classes));
@@ -279,7 +309,6 @@
         } catch (e) {}
       }
       loadStorage();
-      // Migrate old format (students as strings) to new format (objects with {n,g})
       Object.values(classes).forEach((c) => {
         c.students = c.students.map((s) =>
           typeof s === "string" ? { n: s, g: "" } : s,
@@ -309,17 +338,21 @@
       function normaliseAngle(a) {
         return ((a % TAU) + TAU) % TAU;
       }
-
-      // Returns remaining students (not removed this session), filtered by gender if alternating
-      function getRemaining(genderFilter) {
+      function getRemaining(gf) {
+        // If group mode is active, only show current group's non-removed members
+        if (groupMode && groups.length > 0) {
+          const grp = groups[currentGroupIdx];
+          if (!grp) return [];
+          const grpRemoved = groupRemovedMap[currentGroupIdx] || new Set();
+          return grp.members.filter((s) => !grpRemoved.has(s.n));
+        }
         const base = allNames.filter((s) => !removed.has(s.n));
-        if (!genderFilter) return base;
-        const filtered = base.filter((s) => s.g === genderFilter);
-        // If no one left in that gender, fall back to everyone remaining
-        return filtered.length > 0 ? filtered : base;
+        if (!gf) return base;
+        const f = base.filter((s) => s.g === gf);
+        return f.length > 0 ? f : base;
       }
 
-      // ── Gender toggle (add row)
+      // ── Gender toggles ──
       function setAddGender(g) {
         addGender = g;
         document.getElementById("addGenderBoy").className =
@@ -335,10 +368,10 @@
           g === "girl" ? "active-girl" : "";
       }
 
-      // ── Alternate toggle
+      // ── Alternate toggle ──
       function toggleAlternate() {
         alternateMode = document.getElementById("alternateToggle").checked;
-        nextTurn = "boy"; // always start with boys when enabling
+        nextTurn = "boy";
         updateModeBar();
         drawWheel();
         updateUI();
@@ -350,27 +383,71 @@
             '<span style="color:#888">Off — picks randomly from everyone</span>';
           return;
         }
-        const label =
+        el.innerHTML =
           nextTurn === "boy"
             ? '<span class="next-boy">♂ Boy\'s turn next</span>'
             : '<span class="next-girl">♀ Girl\'s turn next</span>';
-        el.innerHTML = label;
       }
 
-      // ── Toggle a student's gender in the name list
       function toggleStudentGender(name) {
         if (!activeId) return;
         const s = classes[activeId].students.find((s) => s.n === name);
         if (!s) return;
         s.g = s.g === "boy" ? "girl" : s.g === "girl" ? "" : "boy";
-        const local = allNames.find((s) => s.n === name);
-        if (local) local.g = s.g;
+        const loc = allNames.find((s) => s.n === name);
+        if (loc) loc.g = s.g;
         save();
         renderNameList();
         drawWheel();
       }
 
-      // ── Sidebar
+      // ── Edit name ──
+      function openEdit(name) {
+        editingName = name;
+        document.getElementById("editNameInput").value = name;
+        document.getElementById("editModal").classList.add("open");
+        setTimeout(() => document.getElementById("editNameInput").select(), 50);
+      }
+      function closeEdit() {
+        document.getElementById("editModal").classList.remove("open");
+        editingName = null;
+      }
+      function confirmEdit() {
+        const newName = document.getElementById("editNameInput").value.trim();
+        if (!newName || !editingName || !activeId) {
+          closeEdit();
+          return;
+        }
+        if (
+          newName !== editingName &&
+          classes[activeId].students.find((s) => s.n === newName)
+        ) {
+          alert("That name already exists in this class.");
+          return;
+        }
+        // Update everywhere
+        const cs = classes[activeId].students.find((s) => s.n === editingName);
+        if (cs) cs.n = newName;
+        const al = allNames.find((s) => s.n === editingName);
+        if (al) al.n = newName;
+        if (removed.has(editingName)) {
+          removed.delete(editingName);
+          removed.add(newName);
+        }
+        if (lastWinner === editingName) lastWinner = newName;
+        // Update groups
+        groups.forEach((g) => {
+          const m = g.members.find((s) => s.n === editingName);
+          if (m) m.n = newName;
+        });
+        save();
+        renderNameList();
+        drawWheel();
+        renderGroups();
+        closeEdit();
+      }
+
+      // ── Sidebar ──
       function renderSidebar() {
         const el = document.getElementById("classList"),
           ids = Object.keys(classes);
@@ -383,8 +460,7 @@
           .map((id) => {
             const c = classes[id];
             return `<div class="class-item${id === activeId ? " active" : ""}" onclick="selectClass('${id}')">
-        <span class="ci-name">${esc(c.name)}</span>
-        <span class="ci-count">${c.students.length}</span>
+        <span class="ci-name">${esc(c.name)}</span><span class="ci-count">${c.students.length}</span>
         <button class="ci-del" onclick="deleteClass(event,'${id}')" title="Delete"><i class="ti ti-trash" style="font-size:13px;"></i></button>
       </div>`;
           })
@@ -419,6 +495,11 @@
         angle = 0;
         spinning = false;
         nextTurn = "boy";
+        groups = [];
+        groupMode = false;
+        currentGroupIdx = 0;
+        groupRemovedMap = {};
+        groupLastWinner = {};
         if (animId) cancelAnimationFrame(animId);
         save();
         renderSidebar();
@@ -427,6 +508,7 @@
       function showEmpty() {
         document.getElementById("emptyState").style.display = "";
         document.getElementById("classEditor").style.display = "none";
+        document.getElementById("groupsSection").style.display = "none";
       }
       function showEditor() {
         const c = classes[activeId];
@@ -441,6 +523,7 @@
         renderNameList();
         drawWheel();
         updateUI();
+        renderGroups();
       }
       function startRename() {
         const c = classes[activeId],
@@ -457,15 +540,15 @@
         inp.outerHTML = `<span class="panel-title" id="classTitle">${esc(val)}</span>`;
       }
 
-      // ── Add / bulk add
+      // ── Add / bulk ──
       function addName() {
         const inp = document.getElementById("nameInput"),
           val = inp.value.trim();
         if (!val || !activeId) return;
         if (!classes[activeId].students.find((s) => s.n === val)) {
-          const student = { n: val, g: addGender };
-          classes[activeId].students.push(student);
-          allNames.push({ ...student });
+          const st = { n: val, g: addGender };
+          classes[activeId].students.push(st);
+          allNames.push({ ...st });
           save();
         }
         inp.value = "";
@@ -491,9 +574,9 @@
         let added = 0;
         names.forEach((n) => {
           if (!classes[activeId].students.find((s) => s.n === n)) {
-            const student = { n, g: bulkGender };
-            classes[activeId].students.push(student);
-            allNames.push({ ...student });
+            const st = { n, g: bulkGender };
+            classes[activeId].students.push(st);
+            allNames.push({ ...st });
             added++;
           }
         });
@@ -508,7 +591,7 @@
             `Added ${added} student${added > 1 ? "s" : ""}!`;
       }
 
-      // ── Click name tag: first click = confirm prompt, second = remove from session
+      // ── Name tag click: confirm then session-remove ──
       function handleTagClick(name) {
         const tags = document.querySelectorAll(".name-tag");
         let found = null;
@@ -534,7 +617,7 @@
         }, 2000);
       }
 
-      // ── Name list rendering
+      // ── Name list ──
       function renderNameList() {
         const el = document.getElementById("nameList"),
           label = document.getElementById("nameListLabel");
@@ -544,15 +627,14 @@
           label.textContent = "";
           return;
         }
-        const boys = allNames.filter((s) => s.g === "boy").length;
-        const girls = allNames.filter((s) => s.g === "girl").length;
-        const unset = allNames.filter((s) => !s.g).length;
-        let info = `${boys} ♂ boys · ${girls} ♀ girls`;
+        const boys = allNames.filter((s) => s.g === "boy").length,
+          girls = allNames.filter((s) => s.g === "girl").length,
+          unset = allNames.filter((s) => !s.g).length;
+        let info = `${boys} ♂ · ${girls} ♀`;
         if (unset) info += ` · ${unset} untagged`;
-        if (removed.size) info += ` · ${removed.size} removed this round`;
+        if (removed.size) info += ` · ${removed.size} removed`;
         label.textContent =
-          info + " — click ♂/♀ to change, click name to remove from round";
-
+          info + " — ♂/♀ to change gender · ✏ to edit · × to remove from round";
         el.innerHTML = allNames
           .map((s) => {
             const isWinner = s.n === lastWinner,
@@ -567,35 +649,35 @@
               .filter(Boolean)
               .join(" ");
             const gLabel = s.g === "boy" ? "♂" : s.g === "girl" ? "♀" : "?";
-            const gTitle =
-              s.g === "boy"
-                ? "Boy — click to change"
-                : s.g === "girl"
-                  ? "Girl — click to change"
-                  : "Untagged — click to set";
-            return `<div class="${cls}" data-name="${esc(s.n)}" onclick="handleTagClick('${s.n.replace(/'/g, "\\'")}')">
-        <span>${esc(s.n)}</span>
-        <button class="tag-gender-btn" onclick="event.stopPropagation();toggleStudentGender('${s.n.replace(/'/g, "\\'")}') " title="${gTitle}">${gLabel}</button>
-        <button class="tag-remove-btn" onclick="event.stopPropagation();handleTagClick('${s.n.replace(/'/g, "\\'")}') " title="Remove from this round">×</button>
+            return `<div class="${cls}" data-name="${esc(s.n)}">
+        <span style="cursor:pointer" onclick="handleTagClick('${s.n.replace(/'/g, "\\'")}') ">${esc(s.n)}</span>
+        <button class="tag-btn" onclick="toggleStudentGender('${s.n.replace(/'/g, "\\'")}') " title="Change gender">${gLabel}</button>
+        <button class="tag-btn" onclick="openEdit('${s.n.replace(/'/g, "\\'")}') " title="Edit name">✏</button>
+        <button class="tag-btn tag-remove-btn" onclick="handleTagClick('${s.n.replace(/'/g, "\\'")}') " title="Remove from round">×</button>
       </div>`;
           })
           .join("");
       }
 
       function updateUI() {
-        const rem = getRemaining(alternateMode ? nextTurn : null);
-        const btn = document.getElementById("spinBtn");
+        const rem = getRemaining(alternateMode ? nextTurn : null),
+          btn = document.getElementById("spinBtn");
         btn.disabled = rem.length < 1 || spinning;
         updateModeBar();
-        if (getRemaining().length === 0 && allNames.length > 0 && !spinning)
+        if (
+          !groupMode &&
+          getRemaining().length === 0 &&
+          allNames.length > 0 &&
+          !spinning
+        )
           document.getElementById("resultBox").textContent =
             "Everyone picked! Hit reset.";
       }
 
-      // ── Draw wheel
+      // ── Draw wheel ──
       function drawWheel() {
-        const spinPool = getRemaining(alternateMode ? nextTurn : null);
-        const n = spinPool.length;
+        const spinPool = getRemaining(alternateMode ? nextTurn : null),
+          n = spinPool.length;
         ctx.clearRect(0, 0, 300, 300);
         if (n === 0) {
           ctx.beginPath();
@@ -609,6 +691,7 @@
           ctx.font = "500 14px system-ui,sans-serif";
           ctx.textAlign = "center";
           ctx.fillText("All done!", CX, CY + 5);
+          drawCenterButtons(false);
           return;
         }
         const slice = TAU / n;
@@ -631,7 +714,6 @@
             bg = c[0];
             fg = c[1];
           }
-
           const start = angle + i * slice,
             end = start + slice;
           ctx.beginPath();
@@ -643,7 +725,6 @@
           ctx.strokeStyle = isWinner ? "#F0B429" : fg;
           ctx.lineWidth = isWinner ? 3 : 2;
           ctx.stroke();
-
           const mid = start + slice / 2;
           ctx.save();
           ctx.translate(CX, CY);
@@ -659,44 +740,278 @@
           );
           ctx.restore();
         });
+        drawCenterButtons(true);
+      }
+
+      // Draw the two centre hub buttons
+      function drawCenterButtons(hasStudents) {
+        const hubR = 28;
+        // Outer ring
         ctx.beginPath();
-        ctx.arc(CX, CY, 18, 0, TAU);
+        ctx.arc(CX, CY, hubR, 0, TAU);
         ctx.fillStyle = "#fff";
         ctx.fill();
-        ctx.strokeStyle = "#ccc";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#ddd";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        if (!hasStudents) return;
+        // Top half = Spin button (▶)
+        ctx.beginPath();
+        ctx.moveTo(CX, CY);
+        ctx.arc(CX, CY, hubR, -Math.PI, 0);
+        ctx.closePath();
+        ctx.fillStyle = "#534AB7";
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 11px system-ui,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("▶", CX, CY - 6);
+        // Bottom half = Remove winner (✕)
+        ctx.beginPath();
+        ctx.moveTo(CX, CY);
+        ctx.arc(CX, CY, hubR, 0, Math.PI);
+        ctx.closePath();
+        ctx.fillStyle = lastWinner ? "#E5534B" : "#ccc";
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 12px system-ui,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("✕", CX, CY + 14);
+        // Divider line
+        ctx.beginPath();
+        ctx.moveTo(CX - hubR, CY);
+        ctx.lineTo(CX + hubR, CY);
+        ctx.strokeStyle = "rgba(255,255,255,0.5)";
+        ctx.lineWidth = 1;
         ctx.stroke();
       }
 
-      // ── Spin
+      // ── Canvas click: detect slice click OR centre button ──
+      canvas.addEventListener("click", function (e) {
+        if (spinning) return;
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left,
+          my = e.clientY - rect.top;
+        const dx = mx - CX,
+          dy = my - CY,
+          dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= 28) {
+          // Centre hub
+          if (my < CY) {
+            spin();
+          } // top half = spin
+          else {
+            removeWinner();
+          } // bottom half = remove winner
+          return;
+        }
+        if (dist > R) return;
+        // Which slice?
+        const spinPool = getRemaining(alternateMode ? nextTurn : null),
+          n = spinPool.length;
+        if (!n) return;
+        const slice = TAU / n;
+        let clickAngle = Math.atan2(dy, dx);
+        clickAngle = normaliseAngle(clickAngle - angle);
+        const idx = Math.floor(clickAngle / slice) % n;
+        const student = spinPool[idx];
+        if (student) confirmRemoveFromWheel(student.n);
+      });
+
+      // Tooltip on hover
+      canvas.addEventListener("mousemove", function (e) {
+        if (spinning) return;
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left,
+          my = e.clientY - rect.top;
+        const dx = mx - CX,
+          dy = my - CY,
+          dist = Math.sqrt(dx * dx + dy * dy);
+        const tip = document.getElementById("wheelTooltip");
+        if (dist <= 28) {
+          tip.style.display = "block";
+          tip.style.left = mx + "px";
+          tip.style.top = my + "px";
+          tip.textContent =
+            my < CY ? "Click to spin" : "Click to remove winner";
+          return;
+        }
+        if (dist > R) {
+          tip.style.display = "none";
+          return;
+        }
+        const spinPool = getRemaining(alternateMode ? nextTurn : null),
+          n = spinPool.length;
+        if (!n) {
+          tip.style.display = "none";
+          return;
+        }
+        const slice = TAU / n;
+        let clickAngle = normaliseAngle(Math.atan2(dy, dx) - angle);
+        const idx = Math.floor(clickAngle / slice) % n;
+        const student = spinPool[idx];
+        if (student) {
+          tip.style.display = "block";
+          tip.style.left = mx + "px";
+          tip.style.top = my + "px";
+          tip.textContent = "Click to remove " + student.n;
+        } else {
+          tip.style.display = "none";
+        }
+      });
+      canvas.addEventListener("mouseleave", () => {
+        document.getElementById("wheelTooltip").style.display = "none";
+      });
+
+      let pendingRemove = null;
+      function confirmRemoveFromWheel(name) {
+        if (pendingRemove === name) {
+          removed.add(name);
+          if (lastWinner === name) lastWinner = null;
+          pendingRemove = null;
+          renderNameList();
+          drawWheel();
+          updateUI();
+        } else {
+          pendingRemove = name;
+          document.getElementById("resultBox").textContent =
+            `Remove ${name}? Click again to confirm.`;
+          setTimeout(() => {
+            if (pendingRemove === name) {
+              pendingRemove = null;
+              document.getElementById("resultBox").textContent = lastWinner
+                ? `🎉 ${lastWinner}! (click their name to remove)`
+                : "Ready to spin!";
+            }
+          }, 2500);
+        }
+      }
+
+      function removeWinner() {
+        if (!lastWinner) {
+          document.getElementById("resultBox").textContent =
+            "No winner to remove yet.";
+          return;
+        }
+        if (groupMode && groups.length > 0) {
+          if (!groupRemovedMap[currentGroupIdx])
+            groupRemovedMap[currentGroupIdx] = new Set();
+          groupRemovedMap[currentGroupIdx].add(lastWinner);
+          groupLastWinner[currentGroupIdx] = null;
+        } else {
+          removed.add(lastWinner);
+        }
+        lastWinner = null;
+        renderNameList();
+        drawWheel();
+        updateUI();
+        document.getElementById("resultBox").textContent =
+          "Removed! Ready to spin again.";
+      }
+
+      // ── Spin ──
       function spin() {
+        if (groupMode && groups.length > 0) {
+          spinGroup();
+          return;
+        }
+        // Normal spin: auto-remove last winner before next spin
+        if (lastWinner) {
+          removed.add(lastWinner);
+          lastWinner = null;
+        }
         const spinPool = getRemaining(alternateMode ? nextTurn : null);
         if (spinning || spinPool.length === 0) return;
-        lastWinner = null;
+        doSpin(spinPool, (winner) => {
+          lastWinner = winner.n;
+          drawWheel();
+          if (alternateMode) nextTurn = nextTurn === "boy" ? "girl" : "boy";
+          const tl =
+            winner.g === "boy" ? "♂ " : winner.g === "girl" ? "♀ " : "";
+          document.getElementById("resultBox").textContent =
+            `🎉 ${tl}${winner.n}! (click name or ✕ to remove)`;
+          renderNameList();
+          updateUI();
+        });
+      }
+
+      function spinGroup() {
+        // Auto-remove last winner for current group before spinning
+        const prevWinner = groupLastWinner[currentGroupIdx];
+        if (prevWinner) {
+          if (!groupRemovedMap[currentGroupIdx])
+            groupRemovedMap[currentGroupIdx] = new Set();
+          groupRemovedMap[currentGroupIdx].add(prevWinner);
+          groupLastWinner[currentGroupIdx] = null;
+          lastWinner = null;
+        }
+        const spinPool = getRemaining();
+        if (spinning) return;
+        if (spinPool.length === 0) {
+          // This group is exhausted, skip to next
+          advanceGroup();
+          return;
+        }
+        doSpin(spinPool, (winner) => {
+          lastWinner = winner.n;
+          groupLastWinner[currentGroupIdx] = winner.n;
+          drawWheel();
+          const grpName = groups[currentGroupIdx].name;
+          const tl =
+            winner.g === "boy" ? "♂ " : winner.g === "girl" ? "♀ " : "";
+          document.getElementById("resultBox").textContent =
+            `🎉 ${grpName}: ${tl}${winner.n}!`;
+          renderNameList();
+          // Advance to next group
+          setTimeout(() => {
+            advanceGroup();
+          }, 1200);
+        });
+      }
+
+      function advanceGroup() {
+        currentGroupIdx = (currentGroupIdx + 1) % groups.length;
+        lastWinner = groupLastWinner[currentGroupIdx] || null;
+        updateGroupBanner();
+        renderGroups();
+        drawWheel();
+        updateUI();
+        const grp = groups[currentGroupIdx];
+        const grpRemoved = groupRemovedMap[currentGroupIdx] || new Set();
+        const rem = grp.members.filter((s) => !grpRemoved.has(s.n)).length;
+        if (rem === 0) {
+          document.getElementById("resultBox").textContent =
+            `${grp.name} is all done! Skipping…`;
+          setTimeout(() => {
+            advanceGroup();
+          }, 800);
+        } else {
+          document.getElementById("resultBox").textContent =
+            `${grp.name}'s turn — hit Spin!`;
+        }
+      }
+
+      function doSpin(spinPool, onDone) {
         spinning = true;
         document.getElementById("spinBtn").disabled = true;
         document.getElementById("resultBox").textContent = "🎲 Spinning…";
-
-        const n = spinPool.length;
-        const sliceSize = TAU / n;
-        const winnerIdx = Math.floor(Math.random() * n);
-
+        const n = spinPool.length,
+          sliceSize = TAU / n,
+          winnerIdx = Math.floor(Math.random() * n);
         const targetAngle =
           POINTER_ANGLE - winnerIdx * sliceSize - sliceSize / 2;
-        const curNorm = normaliseAngle(angle);
-        const tgtNorm = normaliseAngle(targetAngle);
+        const curNorm = normaliseAngle(angle),
+          tgtNorm = normaliseAngle(targetAngle);
         let fwd = tgtNorm - curNorm;
         if (fwd < 0.001) fwd += TAU;
-
-        const extraSpins = TAU * (5 + Math.floor(Math.random() * 4));
-        const totalRotation = extraSpins + fwd;
-        const startAngle = angle;
+        const extraSpins = TAU * (5 + Math.floor(Math.random() * 4)),
+          totalRotation = extraSpins + fwd,
+          startAngle = angle;
         let startTime = null;
         const duration = 3500 + Math.random() * 1000;
         function ease(t) {
           return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
         }
-
         function frame(ts) {
           if (!startTime) startTime = ts;
           const progress = Math.min((ts - startTime) / duration, 1);
@@ -705,27 +1020,14 @@
             drawWheel();
             animId = requestAnimationFrame(frame);
           } else {
-            // Snap to exact final angle FIRST, then draw ONCE with that locked angle
             angle = normaliseAngle(startAngle + totalRotation);
             spinning = false;
-            const winner = spinPool[winnerIdx];
-            lastWinner = winner.n;
-            // Draw the wheel with the snapped angle before anything else changes
-            drawWheel();
-            // Now update UI (advance turn, update labels) — no further drawWheel() calls
-            if (alternateMode) nextTurn = nextTurn === "boy" ? "girl" : "boy";
-            const turnLabel =
-              winner.g === "boy" ? "♂ " : winner.g === "girl" ? "♀ " : "";
-            document.getElementById("resultBox").textContent =
-              `🎉 ${turnLabel}${winner.n}! (click their name to remove)`;
-            renderNameList();
-            updateUI();
+            onDone(spinPool[winnerIdx]);
           }
         }
         animId = requestAnimationFrame(frame);
       }
 
-      // ── Reset (session only — class roster untouched)
       function resetWheel() {
         if (animId) cancelAnimationFrame(animId);
         spinning = false;
@@ -733,20 +1035,186 @@
         removed = new Set();
         lastWinner = null;
         nextTurn = "boy";
-        document.getElementById("resultBox").textContent = allNames.length
-          ? "Ready to spin!"
-          : "Add students to spin!";
+        pendingRemove = null;
+        // Reset group state but keep groups intact
+        if (groupMode && groups.length > 0) {
+          currentGroupIdx = 0;
+          groupRemovedMap = {};
+          groupLastWinner = {};
+          updateGroupBanner();
+          renderGroups();
+          document.getElementById("resultBox").textContent =
+            `Group spin reset! ${groups[0].name} goes first.`;
+        } else {
+          document.getElementById("resultBox").textContent = allNames.length
+            ? "Ready to spin!"
+            : "Add students to spin!";
+        }
         updateModeBar();
         renderNameList();
         drawWheel();
         updateUI();
       }
 
-      // ── Event listeners
+      // ── Groups ──
+      function autoSplit() {
+        if (!activeId || !allNames.length) return;
+        const count = Math.max(
+          2,
+          Math.min(
+            10,
+            parseInt(document.getElementById("groupCount").value) || 2,
+          ),
+        );
+        const shuffled = [...allNames].sort(() => Math.random() - 0.5);
+        groups = [];
+        for (let i = 0; i < count; i++)
+          groups.push({ name: `Group ${i + 1}`, members: [] });
+        shuffled.forEach((s, i) => groups[i % count].members.push({ ...s }));
+        // Enable group mode
+        groupMode = true;
+        currentGroupIdx = 0;
+        groupRemovedMap = {};
+        groupLastWinner = {};
+        lastWinner = null;
+        renderGroups();
+        updateGroupBanner();
+        drawWheel();
+        updateUI();
+        document.getElementById("resultBox").textContent =
+          `Group spin mode on! ${groups[0].name} goes first.`;
+      }
+      function clearGroups() {
+        groups = [];
+        groupMode = false;
+        currentGroupIdx = 0;
+        groupRemovedMap = {};
+        groupLastWinner = {};
+        lastWinner = null;
+        renderGroups();
+        updateGroupBanner();
+        drawWheel();
+        updateUI();
+        document.getElementById("resultBox").textContent = allNames.length
+          ? "Ready to spin!"
+          : "Add students to spin!";
+      }
+
+      function updateGroupBanner() {
+        const banner = document.getElementById("groupTurnBanner");
+        if (!groupMode || !groups.length) {
+          banner.style.display = "none";
+          return;
+        }
+        const grp = groups[currentGroupIdx];
+        const grpRemoved = groupRemovedMap[currentGroupIdx] || new Set();
+        const remaining = grp.members.filter(
+          (s) => !grpRemoved.has(s.n),
+        ).length;
+        banner.style.display = "";
+        banner.className = `group-banner-${currentGroupIdx % 5}`;
+        banner.textContent = `🎯 ${grp.name}'s turn — ${remaining} student${remaining !== 1 ? "s" : ""} remaining`;
+      }
+
+      function renderGroups() {
+        const section = document.getElementById("groupsSection"),
+          el = document.getElementById("groupList");
+        if (!activeId) {
+          section.style.display = "none";
+          return;
+        }
+        section.style.display = "";
+        if (!groups.length) {
+          el.innerHTML =
+            '<p style="font-size:12px;color:#888;">No groups yet — click Auto split</p>';
+          return;
+        }
+        el.innerHTML = groups
+          .map(
+            (g, gi) => `
+      <div class="group-card${groupMode && gi === currentGroupIdx ? " active-group" : ""}">
+        <div class="group-card-title">
+          <span>${esc(g.name)}${groupMode && gi === currentGroupIdx ? " 🎯" : ""}</span>
+          <span style="font-size:11px;color:#aaa;">${g.members.length} students</span>
+        </div>
+        <div class="group-drop-zone" data-group="${gi}"
+          ondragover="dragOver(event,${gi})" ondragleave="dragLeave(event)" ondrop="dropInto(event,${gi})">
+          ${g.members
+            .map(
+              (s) => `
+            <div class="group-chip ${s.g === "boy" ? "boy" : s.g === "girl" ? "girl" : ""}"
+              draggable="true"
+              ondragstart="dragStart(event,'${s.n.replace(/'/g, "\\'")}',${gi})"
+              ondragend="dragEnd(event)">
+              ${s.g === "boy" ? "♂" : s.g === "girl" ? "♀" : ""}${esc(s.n)}
+            </div>`,
+            )
+            .join("")}
+          ${g.members.length === 0 ? '<span style="font-size:11px;color:#bbb;padding:4px;">Drop here</span>' : ""}
+        </div>
+      </div>`,
+          )
+          .join("");
+      }
+
+      // Drag & drop
+      function dragStart(e, name, fromGroup) {
+        dragName = name;
+        dragFromGroup = fromGroup;
+        setTimeout(() => {
+          const el = e.target;
+          if (el) el.classList.add("dragging");
+        }, 0);
+      }
+      function dragEnd(e) {
+        dragName = null;
+        dragFromGroup = null;
+        document
+          .querySelectorAll(".group-chip.dragging")
+          .forEach((el) => el.classList.remove("dragging"));
+      }
+      function dragOver(e, toGroup) {
+        e.preventDefault();
+        document
+          .querySelectorAll(".group-drop-zone")
+          .forEach((z) => z.classList.remove("drag-over"));
+        e.currentTarget.classList.add("drag-over");
+      }
+      function dragLeave(e) {
+        e.currentTarget.classList.remove("drag-over");
+      }
+      function dropInto(e, toGroup) {
+        e.currentTarget.classList.remove("drag-over");
+        if (
+          dragName === null ||
+          dragFromGroup === null ||
+          dragFromGroup === toGroup
+        )
+          return;
+        const fromG = groups[dragFromGroup],
+          toG = groups[toGroup];
+        const idx = fromG.members.findIndex((s) => s.n === dragName);
+        if (idx === -1) return;
+        const [student] = fromG.members.splice(idx, 1);
+        toG.members.push(student);
+        renderGroups();
+      }
+
+      // ── Events ──
       document
         .getElementById("bulkModal")
         .addEventListener("click", function (e) {
           if (e.target === this) closeBulk();
+        });
+      document
+        .getElementById("editModal")
+        .addEventListener("click", function (e) {
+          if (e.target === this) closeEdit();
+        });
+      document
+        .getElementById("editNameInput")
+        .addEventListener("keydown", (e) => {
+          if (e.key === "Enter") confirmEdit();
         });
       document.getElementById("nameInput").addEventListener("keydown", (e) => {
         if (e.key === "Enter") addName();
@@ -763,7 +1231,7 @@
             .forEach((t) => t.classList.remove("confirm-remove"));
       });
 
-      // ── Boot
+      // ── Boot ──
       renderSidebar();
       if (activeId && classes[activeId]) selectClass(activeId);
       else {
