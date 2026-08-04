@@ -272,7 +272,8 @@
       let classes = {},
         activeId = null;
       let allNames = [],
-        removed = new Set(),
+        absent = new Set(),
+        sessionRemoved = new Set(),
         lastWinner = null;
       let spinning = false,
         angle = 0,
@@ -339,14 +340,18 @@
         return ((a % TAU) + TAU) % TAU;
       }
       function getRemaining(gf) {
-        // If group mode is active, only show current group's non-removed members
+        // Always exclude absent students from everything
         if (groupMode && groups.length > 0) {
           const grp = groups[currentGroupIdx];
           if (!grp) return [];
           const grpRemoved = groupRemovedMap[currentGroupIdx] || new Set();
-          return grp.members.filter((s) => !grpRemoved.has(s.n));
+          return grp.members.filter(
+            (s) => !absent.has(s.n) && !grpRemoved.has(s.n),
+          );
         }
-        const base = allNames.filter((s) => !removed.has(s.n));
+        const base = allNames.filter(
+          (s) => !absent.has(s.n) && !sessionRemoved.has(s.n),
+        );
         if (!gf) return base;
         const f = base.filter((s) => s.g === gf);
         return f.length > 0 ? f : base;
@@ -430,9 +435,9 @@
         if (cs) cs.n = newName;
         const al = allNames.find((s) => s.n === editingName);
         if (al) al.n = newName;
-        if (removed.has(editingName)) {
-          removed.delete(editingName);
-          removed.add(newName);
+        if (absent.has(editingName)) {
+          absent.delete(editingName);
+          absent.add(newName);
         }
         if (lastWinner === editingName) lastWinner = newName;
         // Update groups
@@ -490,7 +495,8 @@
       function selectClass(id) {
         activeId = id;
         allNames = classes[id].students.map((s) => ({ ...s }));
-        removed = new Set();
+        absent = new Set();
+        sessionRemoved = new Set();
         lastWinner = null;
         angle = 0;
         spinning = false;
@@ -591,30 +597,21 @@
             `Added ${added} student${added > 1 ? "s" : ""}!`;
       }
 
-      // ── Name tag click: confirm then session-remove ──
-      function handleTagClick(name) {
-        const tags = document.querySelectorAll(".name-tag");
-        let found = null;
-        tags.forEach((t) => {
-          if (t.dataset.name === name) found = t;
-        });
-        if (!found) return;
-        if (found.classList.contains("confirm-remove")) {
-          removed.add(name);
+      // ── Mark/unmark absent (× button) — hides from ALL games until toggled back ──
+      function toggleAbsent(name) {
+        if (absent.has(name)) {
+          absent.delete(name); // un-mark: student is back
+        } else {
+          absent.add(name);
           if (lastWinner === name) lastWinner = null;
-          renderNameList();
-          drawWheel();
-          updateUI();
-          return;
         }
-        document
-          .querySelectorAll(".name-tag.confirm-remove")
-          .forEach((t) => t.classList.remove("confirm-remove"));
-        found.classList.add("confirm-remove");
-        setTimeout(() => {
-          if (found && found.classList.contains("confirm-remove"))
-            found.classList.remove("confirm-remove");
-        }, 2000);
+        renderNameList();
+        drawWheel();
+        updateUI();
+        if (groups.length) {
+          renderGroups();
+          updateGroupBanner();
+        }
       }
 
       // ── Name list ──
@@ -627,33 +624,38 @@
           label.textContent = "";
           return;
         }
-        const boys = allNames.filter((s) => s.g === "boy").length,
-          girls = allNames.filter((s) => s.g === "girl").length,
-          unset = allNames.filter((s) => !s.g).length;
+        const boys = allNames.filter(
+          (s) => s.g === "boy" && !absent.has(s.n),
+        ).length;
+        const girls = allNames.filter(
+          (s) => s.g === "girl" && !absent.has(s.n),
+        ).length;
+        const absentCount = absent.size;
         let info = `${boys} ♂ · ${girls} ♀`;
-        if (unset) info += ` · ${unset} untagged`;
-        if (removed.size) info += ` · ${removed.size} removed`;
+        if (absentCount) info += ` · ${absentCount} absent`;
         label.textContent =
-          info + " — ♂/♀ to change gender · ✏ to edit · × to remove from round";
+          info + " — ♂/♀ gender · ✏ edit · × absent (click again to restore)";
         el.innerHTML = allNames
           .map((s) => {
-            const isWinner = s.n === lastWinner,
-              isRemoved = removed.has(s.n);
+            const isWinner = s.n === lastWinner;
+            const isAbsent = absent.has(s.n);
             const gCls = s.g === "boy" ? "boy" : s.g === "girl" ? "girl" : "";
             const cls = [
               "name-tag",
               gCls,
               isWinner ? "winner" : "",
-              isRemoved ? "removed" : "",
+              isAbsent ? "absent" : "",
             ]
               .filter(Boolean)
               .join(" ");
             const gLabel = s.g === "boy" ? "♂" : s.g === "girl" ? "♀" : "?";
-            return `<div class="${cls}" data-name="${esc(s.n)}">
-        <span style="cursor:pointer" onclick="handleTagClick('${s.n.replace(/'/g, "\\'")}') ">${esc(s.n)}</span>
+            return `<div class="${cls}" data-name="${esc(s.n)}" style="${isAbsent ? "opacity:0.4;text-decoration:line-through;" : ""}">
+        <span>${esc(s.n)}</span>
         <button class="tag-btn" onclick="toggleStudentGender('${s.n.replace(/'/g, "\\'")}') " title="Change gender">${gLabel}</button>
         <button class="tag-btn" onclick="openEdit('${s.n.replace(/'/g, "\\'")}') " title="Edit name">✏</button>
-        <button class="tag-btn tag-remove-btn" onclick="handleTagClick('${s.n.replace(/'/g, "\\'")}') " title="Remove from round">×</button>
+        <button class="tag-btn tag-remove-btn" onclick="toggleAbsent('${s.n.replace(/'/g, "\\'")}') " title="${isAbsent ? "Restore (mark present)" : "Mark absent — removes from all games"}">
+          ${isAbsent ? "↩" : "×"}
+        </button>
       </div>`;
           })
           .join("");
@@ -866,7 +868,7 @@
       let pendingRemove = null;
       function confirmRemoveFromWheel(name) {
         if (pendingRemove === name) {
-          removed.add(name);
+          sessionRemoved.add(name);
           if (lastWinner === name) lastWinner = null;
           pendingRemove = null;
           renderNameList();
@@ -898,15 +900,20 @@
             groupRemovedMap[currentGroupIdx] = new Set();
           groupRemovedMap[currentGroupIdx].add(lastWinner);
           groupLastWinner[currentGroupIdx] = null;
+          lastWinner = null;
+          renderNameList();
+          drawWheel();
+          updateUI();
+          advanceGroup();
         } else {
-          removed.add(lastWinner);
+          sessionRemoved.add(lastWinner);
+          lastWinner = null;
+          renderNameList();
+          drawWheel();
+          updateUI();
+          document.getElementById("resultBox").textContent =
+            "Removed! Ready to spin again.";
         }
-        lastWinner = null;
-        renderNameList();
-        drawWheel();
-        updateUI();
-        document.getElementById("resultBox").textContent =
-          "Removed! Ready to spin again.";
       }
 
       // ── Spin ──
@@ -914,11 +921,6 @@
         if (groupMode && groups.length > 0) {
           spinGroup();
           return;
-        }
-        // Normal spin: auto-remove last winner before next spin
-        if (lastWinner) {
-          removed.add(lastWinner);
-          lastWinner = null;
         }
         const spinPool = getRemaining(alternateMode ? nextTurn : null);
         if (spinning || spinPool.length === 0) return;
@@ -936,15 +938,6 @@
       }
 
       function spinGroup() {
-        // Auto-remove last winner for current group before spinning
-        const prevWinner = groupLastWinner[currentGroupIdx];
-        if (prevWinner) {
-          if (!groupRemovedMap[currentGroupIdx])
-            groupRemovedMap[currentGroupIdx] = new Set();
-          groupRemovedMap[currentGroupIdx].add(prevWinner);
-          groupLastWinner[currentGroupIdx] = null;
-          lastWinner = null;
-        }
         const spinPool = getRemaining();
         if (spinning) return;
         if (spinPool.length === 0) {
@@ -960,12 +953,9 @@
           const tl =
             winner.g === "boy" ? "♂ " : winner.g === "girl" ? "♀ " : "";
           document.getElementById("resultBox").textContent =
-            `🎉 ${grpName}: ${tl}${winner.n}!`;
+            `🎉 ${grpName}: ${tl}${winner.n}! (hit ✕ to remove & next group)`;
           renderNameList();
-          // Advance to next group
-          setTimeout(() => {
-            advanceGroup();
-          }, 1200);
+          updateUI();
         });
       }
 
@@ -1032,11 +1022,11 @@
         if (animId) cancelAnimationFrame(animId);
         spinning = false;
         angle = 0;
-        removed = new Set();
+        sessionRemoved = new Set();
         lastWinner = null;
         nextTurn = "boy";
         pendingRemove = null;
-        // Reset group state but keep groups intact
+        // absent stays — they are still absent regardless of reset
         if (groupMode && groups.length > 0) {
           currentGroupIdx = 0;
           groupRemovedMap = {};
@@ -1109,7 +1099,7 @@
         const grp = groups[currentGroupIdx];
         const grpRemoved = groupRemovedMap[currentGroupIdx] || new Set();
         const remaining = grp.members.filter(
-          (s) => !grpRemoved.has(s.n),
+          (s) => !absent.has(s.n) && !grpRemoved.has(s.n),
         ).length;
         banner.style.display = "";
         banner.className = `group-banner-${currentGroupIdx % 5}`;
@@ -1130,16 +1120,17 @@
           return;
         }
         el.innerHTML = groups
-          .map(
-            (g, gi) => `
+          .map((g, gi) => {
+            const visibleMembers = g.members.filter((s) => !absent.has(s.n));
+            return `
       <div class="group-card${groupMode && gi === currentGroupIdx ? " active-group" : ""}">
         <div class="group-card-title">
           <span>${esc(g.name)}${groupMode && gi === currentGroupIdx ? " 🎯" : ""}</span>
-          <span style="font-size:11px;color:#aaa;">${g.members.length} students</span>
+          <span style="font-size:11px;color:#aaa;">${visibleMembers.length} present</span>
         </div>
         <div class="group-drop-zone" data-group="${gi}"
           ondragover="dragOver(event,${gi})" ondragleave="dragLeave(event)" ondrop="dropInto(event,${gi})">
-          ${g.members
+          ${visibleMembers
             .map(
               (s) => `
             <div class="group-chip ${s.g === "boy" ? "boy" : s.g === "girl" ? "girl" : ""}"
@@ -1150,10 +1141,10 @@
             </div>`,
             )
             .join("")}
-          ${g.members.length === 0 ? '<span style="font-size:11px;color:#bbb;padding:4px;">Drop here</span>' : ""}
+          ${visibleMembers.length === 0 ? '<span style="font-size:11px;color:#bbb;padding:4px;">No students present</span>' : ""}
         </div>
-      </div>`,
-          )
+      </div>`;
+          })
           .join("");
       }
 
