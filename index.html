@@ -301,6 +301,56 @@
           localStorage.setItem("wheelActive", activeId || "");
         } catch (e) {}
       }
+
+      function saveGroupState() {
+        if (!activeId) return;
+        try {
+          // Convert Sets to arrays for JSON serialisation
+          const grpRemovedArr = {};
+          Object.entries(groupRemovedMap).forEach(([k, v]) => {
+            grpRemovedArr[k] = [...v];
+          });
+          const state = {
+            groups,
+            groupMode,
+            currentGroupIdx,
+            groupRemovedMap: grpRemovedArr,
+            groupLastWinner,
+            absent: [...absent],
+          };
+          localStorage.setItem(
+            "wheelGroupState_" + activeId,
+            JSON.stringify(state),
+          );
+        } catch (e) {}
+      }
+
+      function loadGroupState() {
+        if (!activeId) return;
+        try {
+          const raw = localStorage.getItem("wheelGroupState_" + activeId);
+          if (!raw) return;
+          const state = JSON.parse(raw);
+          groups = state.groups || [];
+          groupMode = state.groupMode || false;
+          currentGroupIdx = state.currentGroupIdx || 0;
+          absent = new Set(state.absent || []);
+          groupLastWinner = state.groupLastWinner || {};
+          // Convert arrays back to Sets
+          groupRemovedMap = {};
+          Object.entries(state.groupRemovedMap || {}).forEach(([k, v]) => {
+            groupRemovedMap[k] = new Set(v);
+          });
+        } catch (e) {}
+      }
+
+      function clearGroupState() {
+        if (!activeId) return;
+        try {
+          localStorage.removeItem("wheelGroupState_" + activeId);
+        } catch (e) {}
+      }
+
       function loadStorage() {
         try {
           const d = localStorage.getItem("wheelClasses");
@@ -485,6 +535,9 @@
         e.stopPropagation();
         if (!confirm('Delete "' + classes[id].name + '"?')) return;
         delete classes[id];
+        try {
+          localStorage.removeItem("wheelGroupState_" + id);
+        } catch (e) {}
         if (activeId === id) {
           activeId = null;
           showEmpty();
@@ -507,6 +560,7 @@
         groupRemovedMap = {};
         groupLastWinner = {};
         if (animId) cancelAnimationFrame(animId);
+        loadGroupState(); // restore saved group state for this class
         save();
         renderSidebar();
         showEditor();
@@ -612,6 +666,7 @@
           renderGroups();
           updateGroupBanner();
         }
+        saveGroupState();
       }
 
       // ── Name list ──
@@ -901,6 +956,7 @@
           groupRemovedMap[currentGroupIdx].add(lastWinner);
           groupLastWinner[currentGroupIdx] = null;
           lastWinner = null;
+          saveGroupState();
           renderNameList();
           drawWheel();
           updateUI();
@@ -948,6 +1004,7 @@
         doSpin(spinPool, (winner) => {
           lastWinner = winner.n;
           groupLastWinner[currentGroupIdx] = winner.n;
+          saveGroupState();
           drawWheel();
           const grpName = groups[currentGroupIdx].name;
           const tl =
@@ -962,6 +1019,7 @@
       function advanceGroup() {
         currentGroupIdx = (currentGroupIdx + 1) % groups.length;
         lastWinner = groupLastWinner[currentGroupIdx] || null;
+        saveGroupState();
         updateGroupBanner();
         renderGroups();
         drawWheel();
@@ -1031,6 +1089,7 @@
           currentGroupIdx = 0;
           groupRemovedMap = {};
           groupLastWinner = {};
+          saveGroupState();
           updateGroupBanner();
           renderGroups();
           document.getElementById("resultBox").textContent =
@@ -1067,6 +1126,7 @@
         groupRemovedMap = {};
         groupLastWinner = {};
         lastWinner = null;
+        saveGroupState();
         renderGroups();
         updateGroupBanner();
         drawWheel();
@@ -1081,6 +1141,7 @@
         groupRemovedMap = {};
         groupLastWinner = {};
         lastWinner = null;
+        clearGroupState();
         renderGroups();
         updateGroupBanner();
         drawWheel();
@@ -1188,6 +1249,7 @@
         if (idx === -1) return;
         const [student] = fromG.members.splice(idx, 1);
         toG.members.push(student);
+        saveGroupState();
         renderGroups();
       }
 
