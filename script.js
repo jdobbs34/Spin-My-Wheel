@@ -90,6 +90,7 @@ let currentGroupIdx = 0; // which group's turn it is
 let groupRemovedMap = {}; // {groupIdx: Set of removed names}
 let groupLastWinner = {}; // {groupIdx: name}
 let groupMode = false; // true when groups exist and group-spin is active
+let genderFilter = ""; // "" | "boy" | "girl" — limits the wheel in Everyone / Group modes
 let editingName = null;
 let dragName = null,
   dragFromGroup = null;
@@ -116,6 +117,7 @@ function saveGroupState() {
     const state = {
       groups,
       groupMode,
+      genderFilter,
       turnMode,
       nextTurn,
       currentGroupIdx,
@@ -140,6 +142,10 @@ function loadGroupState() {
     currentGroupIdx = state.currentGroupIdx || 0;
     if (currentGroupIdx >= groups.length) currentGroupIdx = 0;
     nextTurn = state.nextTurn === "girl" ? "girl" : "boy";
+    genderFilter =
+      state.genderFilter === "boy" || state.genderFilter === "girl"
+        ? state.genderFilter
+        : "";
     applyMode(state.turnMode || (state.groupMode ? "group" : "all"));
     absent = new Set(state.absent || []);
     groupLastWinner = state.groupLastWinner || {};
@@ -203,13 +209,16 @@ function getRemaining(gf) {
     if (!grp) return [];
     const grpRemoved = groupRemovedMap[currentGroupIdx] || new Set();
     return grp.members.filter(
-      (s) => !absent.has(s.n) && !grpRemoved.has(s.n),
+      (s) =>
+        !absent.has(s.n) &&
+        !grpRemoved.has(s.n) &&
+        (!genderFilter || s.g === genderFilter),
     );
   }
   const base = allNames.filter(
     (s) => !absent.has(s.n) && !sessionRemoved.has(s.n),
   );
-  if (!gf) return base;
+  if (!gf) return genderFilter ? base.filter((s) => s.g === genderFilter) : base;
   const f = base.filter((s) => s.g === gf);
   return f.length > 0 ? f : base;
 }
@@ -269,6 +278,32 @@ function setTurnMode(mode) {
 }
 
 // Jump straight to a team's turn (tap a chip). Un-removed winner on the old team is simply un-picked.
+function setGenderFilter(f) {
+  if (spinning || turnMode === "gender" || f === genderFilter) return;
+  genderFilter = f;
+  pendingRemove = null;
+  // Drop a highlighted winner who no longer belongs on the wheel
+  if (lastWinner) {
+    const w = allNames.find((s) => s.n === lastWinner);
+    if (f && w && w.g !== f) {
+      lastWinner = null;
+      if (groupMode) groupLastWinner[currentGroupIdx] = null;
+    }
+  }
+  saveGroupState();
+  document.getElementById("resultBox").textContent =
+    f === "boy"
+      ? "♂ Boys only on the wheel."
+      : f === "girl"
+        ? "♀ Girls only on the wheel."
+        : "Everyone is back on the wheel.";
+  updateGroupBanner();
+  renderGroups();
+  renderNameList();
+  drawWheel();
+  updateUI();
+}
+
 function setGenderTurn(g) {
   if (spinning || !alternateMode || g === nextTurn) return;
   nextTurn = g;
@@ -299,7 +334,12 @@ function groupRemainingCount(gi) {
   const g = groups[gi];
   if (!g) return 0;
   const gr = groupRemovedMap[gi] || new Set();
-  return g.members.filter((s) => !absent.has(s.n) && !gr.has(s.n)).length;
+  return g.members.filter(
+    (s) =>
+      !absent.has(s.n) &&
+      !gr.has(s.n) &&
+      (!genderFilter || s.g === genderFilter),
+  ).length;
 }
 
 // Skip to the next team without picking anyone (e.g. the wheel was spun by accident).
@@ -348,6 +388,13 @@ function updateModeBar() {
     .forEach((b) =>
       b.classList.toggle("on", b.dataset.mode === turnMode),
     );
+  const fr = document.getElementById("filterRow");
+  if (fr) {
+    fr.style.display = turnMode === "gender" ? "none" : "flex";
+    fr.querySelectorAll("button").forEach((b) =>
+      b.classList.toggle("on", b.dataset.f === genderFilter),
+    );
+  }
   const el = document.getElementById("turnChips");
   if (!el) return;
   if (turnMode === "gender") {
@@ -486,6 +533,7 @@ function selectClass(id) {
   groupRemovedMap = {};
   groupLastWinner = {};
   applyMode("all");
+  genderFilter = "";
   if (animId) cancelAnimationFrame(animId);
   loadGroupState(); // restore saved group state for this class
   save();
@@ -975,7 +1023,9 @@ function advanceGroup() {
     drawWheel();
     updateUI();
     document.getElementById("resultBox").textContent =
-      "All groups are done! Hit Reset.";
+      genderFilter
+        ? `No ${genderFilter === "boy" ? "boys" : "girls"} left in any group — switch the filter or Reset.`
+        : "All groups are done! Hit Reset.";
     return;
   }
   currentGroupIdx = next;

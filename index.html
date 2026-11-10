@@ -8,7 +8,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
     <link rel="stylesheet" href="styles.css" />
-    <script tyoe="module" src="script.js" defer></script>
+    <script src="script.js" defer></script>
   </head>
   <body>
     <div class="app">
@@ -107,6 +107,14 @@
                 </button>
               </div>
               <div class="turn-chips" id="turnChips"></div>
+              <div class="filter-row" id="filterRow">
+                <span class="mode-hint">Wheel shows:</span>
+                <div class="mode-seg small" id="filterSeg">
+                  <button data-f="" onclick="setGenderFilter('')">Everyone</button>
+                  <button data-f="boy" class="f-boy" onclick="setGenderFilter('boy')">♂ Boys only</button>
+                  <button data-f="girl" class="f-girl" onclick="setGenderFilter('girl')">♀ Girls only</button>
+                </div>
+              </div>
             </div>
 
             <p class="name-list-label" id="nameListLabel"></p>

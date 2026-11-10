@@ -74,6 +74,11 @@
     .mode-seg button { padding: 7px 12px; border: none; background: #fff; color: #666; font-size: 13px; cursor: pointer; font-family: inherit; transition: background 0.1s, color 0.1s; }
     .mode-seg button:not(:last-child) { border-right: 0.5px solid #ccc; }
     .mode-seg button.on { background: #534AB7; color: #fff; font-weight: 500; }
+    .filter-row { display:flex; align-items:center; gap:8px; flex-basis:100%; }
+    .filter-row .mode-hint { white-space:nowrap; }
+    .mode-seg.small button { padding:4px 10px; font-size:12px; }
+    .mode-seg button.on.f-boy { background:#185FA5; }
+    .mode-seg button.on.f-girl { background:#993556; }
     .turn-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
     .turn-chip { padding: 4px 10px; border: 0.5px solid #ccc; border-radius: 14px; background: #fff; color: #1a1a18; font-size: 12px; cursor: pointer; font-family: inherit; transition: background 0.1s; }
     .turn-chip:hover { background: #f0efea; }
